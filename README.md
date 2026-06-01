@@ -5,6 +5,13 @@ no build step, no dependencies, no server required.
 
 ## Features
 
+- **Active forging** — the anvil isn't just a clicker. Heat the metal into a
+  glowing **sweet zone**, then strike there for **PERFECT hits** (×2.6 + fast
+  combo). Mash too fast and you **overheat**, losing your combo until it cools —
+  so striking is a rhythm to manage, not a button to spam. The auto-striker only
+  lands plain hits, so active perfect-striking always out-earns idling.
+- **Forge Orders** — timed contracts ("forge X metal in 40s") that reward
+  frenzies, bonus metal, or a recharged Overdrive. A reason to push hard.
 - **Forge metal** by striking the anvil (mouse, tap, or Spacebar).
 - **Passive income** — every building you buy produces metal/sec, even idle.
 - **Offline earnings** — your forges keep working while the tab is closed; come
@@ -25,7 +32,7 @@ no build step, no dependencies, no server required.
 - **Reforge** for permanent output bonuses and **reputation**, spent in a
   **Reforge Tree** of 8 permanent perks.
 - **Two blacksmiths** (Metal & Iron), 7 building tiers each.
-- **21 achievements**, **9 anvil skins**, sound effects, reduced-motion option,
+- **24 achievements**, **9 anvil skins**, sound effects, reduced-motion option,
   and export/import save codes.
 - **Saves automatically** to the browser (localStorage) and a local high-score
   board — works fully offline on GitHub Pages.

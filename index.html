@@ -46,10 +46,21 @@
 
   .heatwrap{margin-top:14px;}
   .heatlabels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;}
-  .heattrack{height:14px;border-radius:8px;background:#16110e;overflow:hidden;
+  .heattrack{position:relative;height:16px;border-radius:8px;background:#16110e;overflow:hidden;
     box-shadow:inset 0 1px 3px rgba(0,0,0,.7);border:1px solid #000;}
-  .heatfill{height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ffd23a,#ff8a1f,#ff3a1f);transition:width .12s;}
+  .heatfill{position:absolute;top:0;left:0;height:100%;width:0%;border-radius:8px 0 0 8px;z-index:1;
+    background:linear-gradient(90deg,#ffd23a,#ff8a1f,#ff3a1f);transition:width .1s;}
   .heatfill.iron{background:linear-gradient(90deg,#bfe6ff,#5aa8ff,#2f7fe0);}
+  .heatfill.inzone{box-shadow:0 0 12px 2px rgba(255,206,90,.9);}
+  .heatzone{position:absolute;top:0;bottom:0;z-index:2;pointer-events:none;
+    background:rgba(255,236,170,.16);border-left:2px solid var(--gold);border-right:2px solid var(--gold);}
+
+  .ordercard{margin-top:12px;border:1px solid var(--gold2);border-radius:11px;padding:10px 12px;
+    background:linear-gradient(160deg,#2e2418,#181109);box-shadow:0 0 0 1px rgba(255,206,90,.08) inset;}
+  .orderhead{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--gold);font-weight:600;}
+  .orderdesc{font-size:12px;color:var(--txt);margin:6px 0 7px;}
+  .ordertrack{height:9px;border-radius:6px;background:#16110e;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.7);border:1px solid #000;}
+  .orderfill{height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg,#ffd874,#e0850e);transition:width .2s;}
   .controls{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:12px;}
   .hint{font-size:12px;color:var(--muted);}
   .combowrap{margin-top:12px;}
@@ -246,8 +257,15 @@
         </div>
         <div class="hint" style="text-align:center;margin-top:8px;">Strike the anvil (or press Space) to forge.</div>
 
-        <div class="heatlabels"><span>Forge Heat</span><span id="heatLbl">cold</span></div>
-        <div class="heattrack"><div class="heatfill" id="heatFill"></div></div>
+        <div class="heatlabels"><span>Forge Temp</span><span id="heatLbl">cold</span></div>
+        <div class="heattrack"><div class="heatfill" id="heatFill"></div><div class="heatzone" id="heatZone"></div></div>
+        <div class="hint" style="text-align:center;font-size:11px;margin-top:4px;">Heat the metal into the glowing band, then strike for <b style="color:var(--gold)">PERFECT</b> hits.</div>
+
+        <div id="orderCard" class="ordercard" style="display:none;">
+          <div class="orderhead"><span><i class="ti ti-clipboard-text"></i> Forge Order</span><span id="orderTime"></span></div>
+          <div class="orderdesc" id="orderDesc"></div>
+          <div class="ordertrack"><div class="orderfill" id="orderFill"></div></div>
+        </div>
 
         <div id="comboWrap" class="combowrap" style="display:none;">
           <div class="combolabels"><span>Combo ×<span id="comboMult">1.0</span></span><span id="comboCount">0 hits</span></div>
@@ -374,7 +392,9 @@
       {nm:"Singularity",base:160000000,mps:60000}
     ]}
   ];
-  var NTIER=7, DRILL_COST=50000, CRIT_MULT=7, HEAT_ADD=7, HEAT_DECAY=10;
+  var NTIER=7, DRILL_COST=50000, CRIT_MULT=7, HEAT_ADD=12, HEAT_DECAY=16;
+  var SWEET_LO=55, SWEET_HI=85, PERFECT_MULT=2.6, COMBO_WIN=1600;   // active-forging sweet zone
+  var ORDER_TIME=40, ORDER_COOLDOWN=22000, ORDER_MINTOTAL=200;       // forge orders
   var FRENZY_MS=13000, PROD_FRENZY=7, CLICK_FRENZY=77;
   var MILESTONES=[10,25,50,100,150,200,250];   // each doubles a building's output
   var OD={dur:15000,cd:120000,mult:5};          // Overdrive: ×5 for 15s, 2min cooldown
@@ -388,11 +408,11 @@
     {id:"cr1",nm:"Keen Edge",ds:"+4% critical chance",kind:"crit",val:0.04,cost:35000,req:function(){return S.stats.criticals>=25;}},
     {id:"c2",nm:"Weighted Head",ds:"×2 click power",kind:"click",val:2,cost:60000,req:function(){return W().hammer>=10;}},
     {id:"cb2",nm:"Master of Tempo",ds:"Combo cap ×1.6 (up to ×4.2)",kind:"combocap",val:1.6,cost:90000,req:function(){return true;}},
-    {id:"h1",nm:"Insulated Forge",ds:"Forge Heat bonus up to +120%",kind:"heat",val:0.6,cost:120000,req:function(){return S.stats.maxedHeat;}},
+    {id:"h1",nm:"Wide Tolerance",ds:"Sweet zone is much wider — easier PERFECT hits",kind:"zone",val:12,cost:120000,req:function(){return S.stats.maxedHeat;}},
     {id:"t2",nm:"Hotter Forges",ds:"3rd building produces ×3",kind:"tier",idx:2,val:3,cost:160000,req:function(){return tierOwnedAny(2)>=10;}},
     {id:"g1",nm:"Lucky Charm",ds:"Golden ingots appear 30% more often",kind:"ingot",val:0.7,cost:200000,req:function(){return S.stats.ingots>=5;}},
     {id:"m2",nm:"Conveyor Belts",ds:"×2 metal/sec",kind:"mps",val:2,cost:300000,req:function(){return mpsRaw()>=120;}},
-    {id:"h2",nm:"Ember Retention",ds:"Forge Heat fades 40% slower",kind:"heatdecay",val:0.6,cost:450000,req:function(){return S.stats.maxedHeat;}},
+    {id:"h2",nm:"Ember Retention",ds:"Forge cools 40% slower — more time to land PERFECT hits",kind:"heatdecay",val:0.6,cost:450000,req:function(){return S.stats.maxedHeat;}},
     {id:"sy1",nm:"Smith's Synergy",ds:"Each Hammer level adds +2% metal/sec",kind:"synergy",val:0.02,cost:600000,req:function(){return W().hammer>=15;}},
     {id:"cr2",nm:"Devastation",ds:"Critical strikes hit ×10 (was ×7)",kind:"critmult",val:3,cost:800000,req:function(){return S.stats.criticals>=200;}},
     {id:"g2",nm:"Sustained Frenzy",ds:"Frenzies & Overdrive last 8s longer",kind:"frenzy",val:8000,cost:1200000,req:function(){return S.stats.ingots>=15;}},
@@ -433,7 +453,10 @@
     {id:"ms150",nm:"Mass Production",desc:"Own 150 of any one building", bonus:0.07, test:function(){return maxOwned()>=150;}},
     {id:"tech1",nm:"Engineer",      desc:"Build your first blueprint", bonus:0.03, test:function(){return techCount()>=1;}},
     {id:"tech10",nm:"Chief Designer",desc:"Build 10 blueprints", bonus:0.06, test:function(){return techCount()>=10;}},
-    {id:"od1",  nm:"Overclocked",   desc:"Activate Overdrive", bonus:0.03, test:function(){return (S.stats.overdrives||0)>=1;}}
+    {id:"od1",  nm:"Overclocked",   desc:"Activate Overdrive", bonus:0.03, test:function(){return (S.stats.overdrives||0)>=1;}},
+    {id:"perf100",nm:"Perfectionist",desc:"Land 100 PERFECT strikes", bonus:0.05, test:function(){return (S.stats.perfects||0)>=100;}},
+    {id:"order1",nm:"Order Up",     desc:"Complete a Forge Order", bonus:0.04, test:function(){return (S.stats.orders||0)>=1;}},
+    {id:"order25",nm:"Master Craftsman",desc:"Complete 25 Forge Orders", bonus:0.10, test:function(){return (S.stats.orders||0)>=25;}}
   ];
 
   var SKINS=[
@@ -456,7 +479,7 @@
     return {v:2,shop:0,prestige:0,repAvail:0,pUp:{},tech:{},buyMode:1,odLast:0,
       shops:[newShop(),newShop()],
       totalMetal:0,runMetal:0,achv:{},skin:"iron",
-      stats:{clicks:0,criticals:0,ingots:0,reforges:0,overdrives:0,maxedHeat:false},
+      stats:{clicks:0,criticals:0,ingots:0,reforges:0,overdrives:0,perfects:0,orders:0,maxedHeat:false},
       name:"",pw:"",vol:0.7,sound:true,reducedMotion:false,
       lastSeen:Date.now()};
   }
@@ -506,7 +529,14 @@
   function achvBaseMult(){var b=1;for(var i=0;i<ACHV.length;i++)if(S.achv[ACHV[i].id])b+=ACHV[i].bonus;return b;}
   function achvMult(){return achvBaseMult();}
   function comboMult(){return 1+Math.min(combo,comboCap())*0.04;}
-  function heatBonus(){return 1+(heat/100)*(0.6+techSum('heat'));}
+  // active forging: heat the metal into the sweet zone, strike for PERFECT hits
+  function sweetLo(){return Math.max(2,SWEET_LO-techSum('zone'));}
+  function sweetHi(){return Math.min(99,SWEET_HI+techSum('zone'));}
+  function strikeQuality(h){
+    if(h>=sweetLo()&&h<=sweetHi())return {mult:PERFECT_MULT,kind:'perfect'};
+    if(h>sweetHi())return {mult:1,kind:'over'};
+    return {mult:1,kind:'cold'};
+  }
   function critChance(){return Math.min(0.9,0.01+lvl("lucky")*0.02+techSum('crit'));}
   function prodFrenzyOn(){return Date.now()<prodFrenzyUntil;}
   function clickFrenzyOn(){return Date.now()<clickFrenzyUntil;}
@@ -528,9 +558,9 @@
     base*=pMult()*achvMult()*(1+0.25*lvl("sharp"))*techProd('click')*odMult();
     return base;
   }
-  // displayed/effective per click (manual), includes combo+heat+frenzy
+  // displayed/effective per click (manual): includes combo + current strike quality + frenzy
   function clickValue(){
-    var v=clickPower()*comboMult()*heatBonus();
+    var v=clickPower()*comboMult()*strikeQuality(heat).mult;
     if(clickFrenzyOn())v*=CLICK_FRENZY;
     return v;
   }
@@ -556,6 +586,7 @@
   /* ---------- runtime (not saved) ---------- */
   var combo=0,lastTap=0,heat=0,autoAcc=0;
   var prodFrenzyUntil=0,clickFrenzyUntil=0;
+  var orderNeed=0,orderProg=0,orderEnd=0,orderNext=0;
   var soundOn=true,vol=0.7,ac=null,playerName='',playerPw='';
   var ingotTimer=null,ingotEl=null;
 
@@ -590,6 +621,13 @@
       g.gain.exponentialRampToValueAtTime(.0001,t+i*0.06+0.4);o.connect(g);g.connect(a.destination);
       o.start(t+i*0.06);o.stop(t+i*0.06+0.45);})(i);}
   }catch(e){}}
+  function dingPerfect(){if(!soundOn||vol<=0)return;var a=ctx();if(!a)return;try{
+    var t=a.currentTime,notes=[988,1319];   // bright two-note "ting"
+    for(var i=0;i<notes.length;i++){(function(i){var o=a.createOscillator(),g=a.createGain();o.type='triangle';
+      o.frequency.value=notes[i];g.gain.setValueAtTime(.0001,t+i*0.05);g.gain.linearRampToValueAtTime(.13*vol,t+i*0.05+0.008);
+      g.gain.exponentialRampToValueAtTime(.0001,t+i*0.05+0.3);o.connect(g);g.connect(a.destination);
+      o.start(t+i*0.05);o.stop(t+i*0.05+0.34);})(i);}
+  }catch(e){}}
 
   /* ---------- effects ---------- */
   function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
@@ -608,22 +646,85 @@
         s.style.transform='translate('+dx+'px,'+dy+'px)';s.style.opacity='0';});
       setTimeout(function(){s.remove();},560);})();}}
   function shake(){if(reduced())return;stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake');}
+  function smoke(){if(reduced())return;var r=stage.getBoundingClientRect();var cx=r.width*.46,cy=80;
+    for(var i=0;i<5;i++){(function(){var s=document.createElement('div');s.className='spark';
+      var sz=6+Math.random()*8;s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=cx+'px';s.style.top=cy+'px';
+      s.style.background='rgba(150,150,150,.6)';s.style.filter='blur(2px)';
+      var dx=(Math.random()-.5)*50,dy=-(30+Math.random()*40);stage.appendChild(s);
+      requestAnimationFrame(function(){s.style.transition='transform .7s ease-out,opacity .7s';
+        s.style.transform='translate('+dx+'px,'+dy+'px) scale(2)';s.style.opacity='0';});
+      setTimeout(function(){s.remove();},720);})();}}
+
+  /* ---------- forge orders ---------- */
+  function orderReward(){
+    var dur=FRENZY_MS+techSum('frenzy'),roll=Math.random();
+    if(roll<0.3){prodFrenzyUntil=Date.now()+dur;return 'a '+Math.round(dur/1000)+'s Forge Frenzy (×'+PROD_FRENZY+' metal/sec)';}
+    if(roll<0.55){clickFrenzyUntil=Date.now()+dur;return 'a '+Math.round(dur/1000)+'s Click Frenzy (×'+CLICK_FRENZY+')';}
+    if(roll<0.8){var b=Math.round(orderNeed*1.5);gain(b);return fmt(b)+' bonus metal';}
+    S.odLast=0;return 'a fully-charged Overdrive';
+  }
+  function startOrder(){
+    var lvl2=(S.stats.orders||0);
+    var per=clickPower()*comboMult()*PERFECT_MULT;     // a strong active strike
+    orderNeed=Math.round(Math.max(120, (mpsClean()*ORDER_TIME)*1.15 + per*ORDER_TIME*0.9) * (1+lvl2*0.04));
+    orderProg=0;orderEnd=Date.now()+ORDER_TIME*1000;orderNext=0;
+    toast('New Forge Order: '+fmt(orderNeed)+' metal in '+ORDER_TIME+'s');beep(560,.1);
+  }
+  function checkOrder(){
+    var now=Date.now();
+    if(orderNeed>0){
+      if(orderProg>=orderNeed){var what=orderReward();S.stats.orders=(S.stats.orders||0)+1;
+        toast('Order complete! Reward: '+what);chime();orderNeed=0;orderNext=now+ORDER_COOLDOWN;renderFrenzy();}
+      else if(now>orderEnd){toast('Order expired — a new one soon.');orderNeed=0;orderNext=now+ORDER_COOLDOWN;}
+    }else if(S.totalMetal>=ORDER_MINTOTAL && now>=orderNext && orderNext>=0){
+      if(orderNext===0)orderNext=now+8000;else startOrder();   // brief delay before the very first order
+    }
+  }
+  function renderOrder(){
+    var card=document.getElementById('orderCard');if(!card)return;
+    if(orderNeed>0){card.style.display='';
+      var left=Math.max(0,Math.ceil((orderEnd-Date.now())/1000));
+      var pct=Math.min(100,orderProg/orderNeed*100);
+      document.getElementById('orderTime').textContent=left+'s';
+      document.getElementById('orderTime').style.color=left<=8?'#ff7a2f':'var(--gold)';
+      document.getElementById('orderDesc').innerHTML='Forge <b>'+fmt(orderNeed)+'</b> metal · '+fmt(orderProg)+' done';
+      document.getElementById('orderFill').style.width=pct+'%';
+    }else if(S.totalMetal>=ORDER_MINTOTAL&&orderNext>0){card.style.display='';
+      var n=Math.max(0,Math.ceil((orderNext-Date.now())/1000));
+      document.getElementById('orderTime').textContent='';
+      document.getElementById('orderDesc').innerHTML='Next forge order in <b>'+n+'s</b>…';
+      document.getElementById('orderFill').style.width='0%';
+    }else card.style.display='none';
+  }
 
   /* ---------- core actions ---------- */
-  function gain(amt){if(amt<=0)return;W().metal+=amt;S.totalMetal+=amt;S.runMetal+=amt;}
+  function gain(amt){if(amt<=0)return;W().metal+=amt;S.totalMetal+=amt;S.runMetal+=amt;
+    if(orderNeed>0&&Date.now()<orderEnd)orderProg+=amt;}
   function tap(auto){
-    var v,crit=false;
-    if(auto){v=clickPower();if(clickFrenzyOn())v*=CLICK_FRENZY;}
-    else{
+    var v,crit=false,q=null;
+    if(auto){
+      // auto-striker: plain hits only — no heat, no combo, no PERFECT. Active play stays better.
+      v=clickPower();if(clickFrenzyOn())v*=CLICK_FRENZY;
+    }else{
       var now=Date.now();
-      if(now-lastTap<1100)combo+=comboStrength();else combo=1;lastTap=now;
+      q=strikeQuality(heat);
+      if(q.kind==='perfect'){combo=(now-lastTap<COMBO_WIN?combo:0)+2*comboStrength();S.stats.perfects=(S.stats.perfects||0)+1;}
+      else if(q.kind==='over'){combo=0;}                                  // overheating breaks the combo
+      else{combo=(now-lastTap<COMBO_WIN?combo:0)+1;}                       // cold strikes build slowly
+      lastTap=now;
       heat=Math.min(100,heat+HEAT_ADD);if(heat>=100&&!S.stats.maxedHeat)S.stats.maxedHeat=true;
-      S.stats.clicks++;v=clickValue();
+      S.stats.clicks++;
+      v=clickPower()*comboMult()*q.mult;if(clickFrenzyOn())v*=CLICK_FRENZY;
     }
     if(Math.random()<critChance()){crit=true;v*=critMultVal();S.stats.criticals++;}
     gain(v);
-    if(!auto){floatText((crit?'CRIT +':'+')+fmt(v),crit);sparks(crit);clang(crit);if(crit)shake();}
-    else if(crit&&!reduced())sparks(false);
+    if(!auto){
+      var perfect=q.kind==='perfect',over=q.kind==='over';
+      floatText((crit?'CRIT ':perfect?'PERFECT ':'')+'+'+fmt(v),crit||perfect);
+      if(over){smoke();clang(false);}
+      else{sparks(crit||perfect);clang(crit||perfect);if(perfect)dingPerfect();}
+      if(crit||perfect)shake();
+    }else if(crit&&!reduced())sparks(false);
   }
   anvil.addEventListener('click',function(){tap(false);});
   // keyboard: space / enter strike (ignore when typing in inputs)
@@ -795,8 +896,13 @@
     document.getElementById('rep').textContent=S.prestige>0?('Reputation '+S.prestige+'  ·  ×'+pMult().toFixed(1)+' output'):'';
     var iron=S.shop===1;
     var hf=document.getElementById('heatFill');hf.style.width=heat+'%';hf.classList.toggle('iron',iron);
-    document.getElementById('heatLbl').textContent=heat<5?'cold':heat<40?'warm':heat<80?'hot':'searing  (+'+Math.round((heatBonus()-1)*100)+'%)';
-    document.getElementById('glow').style.opacity=(0.45+heat/100*0.4).toFixed(2);
+    var q=strikeQuality(heat),inzone=q.kind==='perfect';
+    hf.classList.toggle('inzone',inzone);
+    var zone=document.getElementById('heatZone');if(zone){zone.style.left=sweetLo()+'%';zone.style.width=(sweetHi()-sweetLo())+'%';}
+    var lbl=document.getElementById('heatLbl');
+    lbl.textContent=inzone?'★ READY — strike!':q.kind==='over'?'OVERHEAT — let it cool':heat<sweetLo()-12?'cold':'heating…';
+    lbl.style.color=inzone?'var(--gold)':q.kind==='over'?'#ff7a2f':'var(--muted)';
+    document.getElementById('glow').style.opacity=(inzone?0.95:0.45+heat/100*0.35).toFixed(2);
     var cw=document.getElementById('comboWrap');
     if(combo>=2){cw.style.display='';
       document.getElementById('comboMult').textContent=comboMult().toFixed(1);
@@ -870,12 +976,13 @@
     catch(e){toast('Invalid save code');}});
   document.getElementById('resetBtn').addEventListener('click',function(){
     if(!confirm('Reset ALL progress? This cannot be undone.'))return;
-    S=freshState();playerName='';playerPw='';soundOn=true;vol=0.7;combo=0;heat=0;prodFrenzyUntil=0;clickFrenzyUntil=0;
+    S=freshState();playerName='';playerPw='';soundOn=true;vol=0.7;combo=0;heat=0;prodFrenzyUntil=0;clickFrenzyUntil=0;orderNeed=0;orderProg=0;orderEnd=0;orderNext=0;
     save();buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();buildBlueprints();renderOverdrive();renderTheme();closeModal('settingsModal');toast('Progress reset');});
 
   function renderStats(){var box=document.getElementById('statBox');var st=S.stats;
     var rows=[['Total metal forged',fmt(S.totalMetal)],['Anvil strikes',(st.clicks||0).toLocaleString()],
-      ['Critical strikes',(st.criticals||0).toLocaleString()],['Golden ingots',(st.ingots||0).toLocaleString()],
+      ['PERFECT strikes',(st.perfects||0).toLocaleString()],['Critical strikes',(st.criticals||0).toLocaleString()],
+      ['Golden ingots',(st.ingots||0).toLocaleString()],['Forge orders done',(st.orders||0).toLocaleString()],
       ['Reforges',(st.reforges||0).toLocaleString()],['Reputation',S.prestige+' (×'+pMult().toFixed(1)+')']];
     box.innerHTML=rows.map(function(r){return '<div class="statline"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>';}).join('');}
 
@@ -942,7 +1049,7 @@
     if(!d)return;
     if(d.v>=2&&d.shops){ // current format: merge over fresh so new fields exist
       var f=freshState();for(var k in f)if(!(k in d))d[k]=f[k];
-      d.stats=Object.assign({clicks:0,criticals:0,ingots:0,reforges:0,overdrives:0,maxedHeat:false},d.stats||{});
+      d.stats=Object.assign({clicks:0,criticals:0,ingots:0,reforges:0,overdrives:0,perfects:0,orders:0,maxedHeat:false},d.stats||{});
       d.pUp=d.pUp||{};d.tech=d.tech||{};if(typeof d.buyMode==='undefined')d.buyMode=1;if(typeof d.odLast!=='number')d.odLast=0;
       for(var s=0;s<2;s++){var sh=d.shops[s]||newShop();if(!sh.owned||sh.owned.length!==NTIER){var o=sh.owned||[];var no=[0,0,0,0,0,0,0];for(var i=0;i<o.length&&i<NTIER;i++)no[i]=o[i]||0;sh.owned=no;}
         if(typeof sh.metal!=='number')sh.metal=0;if(typeof sh.hammer!=='number')sh.hammer=sh.ppcLvl||0;if(typeof sh.drill!=='boolean')sh.drill=!!sh.drill;d.shops[s]=sh;}
@@ -998,13 +1105,13 @@
     if(ar>0){autoAcc+=ar*dt;var guard=0;while(autoAcc>=1&&guard<200){autoAcc--;guard++;tap(true);}}
     // heat + combo decay
     if(heat>0)heat=Math.max(0,heat-HEAT_DECAY*techProd('heatdecay')*dt);
-    if(combo>0&&Date.now()-lastTap>1100)combo=Math.max(0,combo-2);
-    renderLive();renderFrenzy();
+    if(combo>0&&Date.now()-lastTap>COMBO_WIN)combo=Math.max(0,combo-2);
+    renderLive();renderFrenzy();renderOrder();
     requestAnimationFrame(frame);
   }
 
   // throttled heavier renders
-  setInterval(function(){renderShop();checkAchv();renderSkins();renderOverdrive();},500);
+  setInterval(function(){renderShop();checkAchv();renderSkins();renderOverdrive();checkOrder();},500);
   setInterval(save,10000);
   setInterval(loadBoard,20000);
   document.addEventListener('visibilitychange',function(){if(document.hidden)save();});
