@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#100c0a">
 <title>Metal Clicker</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
 <style>
@@ -19,7 +20,7 @@
     padding:18px;overflow-x:hidden;transition:background .4s;
   }
   body.iron{background:radial-gradient(120% 80% at 50% -10%,#152538 0%,#0b131c 50%,#070b10 100%);}
-  .wrap{width:100%;max-width:860px;}
+  .wrap{width:100%;max-width:880px;}
   .top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
   h1{font-size:26px;font-weight:500;letter-spacing:0.5px;
      background:linear-gradient(180deg,#fff,#c9a062);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -31,32 +32,37 @@
     background:radial-gradient(120% 95% at 50% 80%,#3a2418 0%,#241712 38%,#15100e 72%,#0d0a09 100%);
     box-shadow:inset 0 2px 16px rgba(0,0,0,.75),inset 0 0 70px rgba(0,0,0,.55);border:1px solid #000;}
   .stage.iron{background:radial-gradient(120% 95% at 50% 80%,#1c2a3a 0%,#13202c 38%,#0c141c 72%,#070b10 100%);}
+  .stage.shake{animation:shake .26s ease-out;}
+  @keyframes shake{10%{transform:translate(-3px,2px)}30%{transform:translate(4px,-2px)}50%{transform:translate(-3px,-1px)}70%{transform:translate(3px,2px)}100%{transform:translate(0,0)}}
   .glow{position:absolute;left:50%;top:40%;width:260px;height:180px;transform:translate(-50%,-50%);
     background:radial-gradient(circle,rgba(255,140,40,.55) 0%,rgba(255,90,20,.25) 40%,rgba(0,0,0,0) 70%);
-    opacity:.55;pointer-events:none;filter:blur(2px);}
+    opacity:.55;pointer-events:none;filter:blur(2px);transition:opacity .15s;}
   .glow.iron{background:radial-gradient(circle,rgba(90,180,255,.55) 0%,rgba(60,130,230,.25) 40%,rgba(0,0,0,0) 70%);}
   .anvilbtn{background:none;border:none;cursor:pointer;padding:0;position:absolute;left:50%;top:30px;
     transform:translateX(-50%);user-select:none;touch-action:manipulation;transition:transform .07s ease-out;
-    filter:drop-shadow(0 14px 18px rgba(0,0,0,.6));z-index:2;}
-  .anvilbtn:active{transform:translateX(-50%) scale(.93) translateY(7px);}
+    filter:drop-shadow(0 14px 18px rgba(0,0,0,.6));z-index:2;outline:none;}
+  .anvilbtn:active,.anvilbtn.kbtap{transform:translateX(-50%) scale(.93) translateY(7px);}
+  .anvilbtn:focus-visible{filter:drop-shadow(0 0 10px var(--gold));}
 
   .heatwrap{margin-top:14px;}
   .heatlabels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;}
   .heattrack{height:14px;border-radius:8px;background:#16110e;overflow:hidden;
     box-shadow:inset 0 1px 3px rgba(0,0,0,.7);border:1px solid #000;}
-  .heatfill{height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ffd23a,#ff8a1f,#ff3a1f);transition:width .1s;}
+  .heatfill{height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ffd23a,#ff8a1f,#ff3a1f);transition:width .12s;}
+  .heatfill.iron{background:linear-gradient(90deg,#bfe6ff,#5aa8ff,#2f7fe0);}
   .controls{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:12px;}
   .hint{font-size:12px;color:var(--muted);}
-  .howto{margin-top:12px;margin-bottom:9px;display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;
-    color:var(--txt);background:rgba(255,206,90,.07);border:1px solid var(--line);
-    border-radius:10px;padding:10px 12px;}
+  .combowrap{margin-top:12px;}
+  .combolabels{display:flex;justify-content:space-between;font-size:12px;color:var(--gold);margin-bottom:4px;font-weight:500;}
+  .combotrack{height:10px;border-radius:6px;background:#16110e;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.7);border:1px solid #000;}
+  .combofill{height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg,#ffd23a,#ff8a1f,#ff3a1f);transition:width .12s linear;}
 
-  .stats{display:flex;gap:9px;margin-bottom:16px;}
+  .stats{display:flex;gap:9px;margin-bottom:14px;}
   .stat{flex:1;border-radius:10px;padding:11px 6px;text-align:center;
     background:linear-gradient(160deg,#2c241f,#171210);border:1px solid var(--line);
     box-shadow:inset 0 1px 1px rgba(255,255,255,.08);}
   .stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-  .stat .val{font-size:21px;font-weight:500;color:#fff;margin-top:2px;}
+  .stat .val{font-size:20px;font-weight:500;color:#fff;margin-top:2px;}
 
   .sectitle{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;}
   #shop{display:flex;flex-direction:column;gap:9px;}
@@ -69,9 +75,11 @@
   .shopbtn .nm{font-weight:500;font-size:14px;}
   .shopbtn .meta{font-size:12px;color:#b6a99c;margin-top:2px;}
   .shopbtn .own{font-size:14px;color:var(--gold);min-width:30px;text-align:right;}
+  .shopbtn.afford{border-color:#6a5238;}
 
   .icbtn{border:1px solid var(--line);border-radius:9px;cursor:pointer;color:#fff;
     background:linear-gradient(160deg,#322a24,#1a1410);padding:7px 11px;font-size:16px;}
+  .icbtn:hover{filter:brightness(1.15);}
   .achvGrid{display:flex;flex-direction:column;gap:7px;}
   .achvItem{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.4;color:var(--muted);
     border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:linear-gradient(160deg,#241c18,#161210);}
@@ -79,6 +87,7 @@
   .achvItem.got{color:var(--txt);border-color:var(--gold2);}
   .achvItem.got i{color:var(--gold);}
   .achvItem b{color:inherit;font-weight:500;}
+  .achvHead{display:flex;justify-content:space-between;align-items:center;}
   .prestige{width:100%;border:none;border-radius:11px;cursor:pointer;color:#3a2400;font-weight:700;
     padding:13px;margin-top:16px;font-size:14px;background:linear-gradient(160deg,#ffd874,#e0850e);
     box-shadow:0 4px 14px rgba(224,133,14,.35);transition:transform .06s,filter .1s;}
@@ -92,12 +101,19 @@
   .float{position:absolute;pointer-events:none;font-weight:700;font-size:20px;color:#ffe08a;
     text-shadow:0 0 7px rgba(255,140,40,.85),0 1px 2px rgba(0,0,0,.7);z-index:4;
     animation:rise .85s cubic-bezier(.2,.7,.3,1) forwards;}
+  .float.crit{font-size:27px;color:#fff;text-shadow:0 0 12px rgba(255,90,40,1),0 0 4px #fff;}
   @keyframes rise{0%{opacity:1;transform:translateY(0) scale(.8);}20%{transform:translateY(-9px) scale(1.18);}100%{opacity:0;transform:translateY(-66px) scale(1);}}
   .spark{position:absolute;border-radius:50%;pointer-events:none;z-index:4;}
 
-  .ingot{position:absolute;z-index:5;cursor:pointer;font-size:30px;color:var(--gold);
-    filter:drop-shadow(0 0 8px rgba(255,200,80,.9));animation:bob 1.2s ease-in-out infinite;}
+  .ingot{position:absolute;z-index:6;cursor:pointer;font-size:34px;color:var(--gold);background:none;border:none;
+    filter:drop-shadow(0 0 10px rgba(255,200,80,.95));animation:bob 1.1s ease-in-out infinite;}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg);}50%{transform:translateY(-7px) rotate(8deg);}}
+
+  .frenzy{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:18;display:flex;gap:8px;pointer-events:none;}
+  .frenzyTag{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#2a1500;
+    background:linear-gradient(160deg,#ffd874,#ff8a1f);box-shadow:0 4px 16px rgba(255,140,40,.5);animation:pulse 1s ease-in-out infinite;}
+  .frenzyTag.click{background:linear-gradient(160deg,#9bd4ff,#2f7fe0);color:#04203f;box-shadow:0 4px 16px rgba(60,130,230,.5);}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
     background:linear-gradient(160deg,#2c241f,#171210);border:1px solid var(--gold2);color:var(--gold);
@@ -105,13 +121,9 @@
     transition:opacity .3s,transform .3s;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:90vw;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .savetag{font-size:11px;color:var(--muted);margin-top:14px;text-align:center;}
-  .combowrap{margin-top:12px;}
-  .combolabels{display:flex;justify-content:space-between;font-size:12px;color:var(--gold);margin-bottom:4px;font-weight:500;}
-  .combotrack{height:10px;border-radius:6px;background:#16110e;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.7);border:1px solid #000;}
-  .combofill{height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg,#ffd23a,#ff8a1f,#ff3a1f);transition:width .12s linear;}
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:30;padding:16px;}
   .modal.show{display:flex;}
-  .modalCard{width:100%;max-width:420px;background:linear-gradient(160deg,#241c18,#15100e);border:1px solid var(--line);
+  .modalCard{width:100%;max-width:460px;background:linear-gradient(160deg,#241c18,#15100e);border:1px solid var(--line);
     border-radius:16px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.6);max-height:88vh;overflow-y:auto;}
   .modalHead{display:flex;justify-content:space-between;align-items:center;font-size:18px;font-weight:500;margin-bottom:14px;color:var(--gold);}
   .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0;font-size:14px;}
@@ -139,6 +151,23 @@
   .skinSwatch{height:30px;border-radius:7px;margin-bottom:6px;border:1px solid rgba(0,0,0,.5);}
   .skinName{font-size:12px;color:var(--txt);}
   .skinReq{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+
+  .pupGrid{display:flex;flex-direction:column;gap:8px;}
+  .pupItem{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;background:linear-gradient(160deg,#2a221c,#161210);}
+  .pupItem .nm{font-size:13px;font-weight:500;color:#fff;}
+  .pupItem .ds{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35;}
+  .pupItem .lv{font-size:11px;color:var(--gold);}
+  .pupBuy{border:1px solid var(--gold2);border-radius:8px;cursor:pointer;color:var(--gold);white-space:nowrap;
+    background:linear-gradient(160deg,#3a2c1a,#211710);padding:7px 10px;font-size:12px;font-weight:600;}
+  .pupBuy:disabled{opacity:.4;cursor:default;color:var(--muted);border-color:var(--line);}
+  .pupBuy.max{opacity:.6;}
+  .statline{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:4px 0;border-bottom:1px solid #211913;}
+  .statline b{color:var(--txt);font-weight:500;}
+  .tabbar{display:flex;gap:6px;margin-bottom:12px;}
+  .tab{flex:1;border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,#241c18,#15100e);
+    color:var(--muted);padding:8px;font-size:13px;cursor:pointer;}
+  .tab.on{color:var(--gold);border-color:var(--gold2);}
 </style>
 </head>
 <body>
@@ -172,27 +201,17 @@
               <radialGradient id="hotGi" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#eaf6ff"/><stop offset=".4" stop-color="#7ec8ff"/><stop offset=".8" stop-color="#3a86ff"/><stop offset="1" stop-color="#0c4ba8"/></radialGradient>
             </defs>
             <ellipse cx="158" cy="214" rx="120" ry="11" fill="#000" opacity=".35"/>
-
-            <!-- horn -->
             <path d="M214 70 Q258 64 298 86 Q306 90 300 96 Q262 100 224 96 Z" fill="url(#hornG)" stroke="#202327" stroke-width="1.2"/>
-            <!-- waist / body under face -->
             <path d="M70 96 L236 96 L226 120 Q210 132 150 134 Q108 132 96 120 Z" fill="url(#ironG)" stroke="#101216" stroke-width="1.2"/>
-            <!-- deep waist column -->
             <path d="M118 132 L196 132 L182 168 L132 168 Z" fill="url(#ironG)" stroke="#101216" stroke-width="1.2"/>
-            <!-- stepped base -->
             <path d="M96 168 L218 168 L226 188 L88 188 Z" fill="url(#ironBase)" stroke="#101216" stroke-width="1.2"/>
             <path d="M82 188 L232 188 L238 204 L76 204 Z" fill="url(#ironBase)" stroke="#101216" stroke-width="1.2"/>
-
-            <!-- polished steel top face -->
             <path d="M66 70 L236 70 L236 84 Q230 92 214 94 L96 94 Q78 92 66 84 Z" fill="url(#faceEdge)" stroke="#202327" stroke-width="1.2"/>
             <rect x="62" y="60" width="178" height="14" rx="3" fill="url(#faceG)" stroke="#202327" stroke-width="1.2"/>
-            <!-- hardy + pritchel holes -->
             <rect x="96" y="63" width="9" height="8" rx="1.5" fill="#0c0d10"/>
             <ellipse cx="124" cy="67" rx="3.4" ry="3" fill="#0c0d10"/>
-            <!-- hot iron resting on face (theme-tinted) -->
             <ellipse id="hot" cx="178" cy="64" rx="18" ry="5" fill="url(#hotG)"/>
             <ellipse id="hotCore" cx="178" cy="63.5" rx="9" ry="2.6" fill="#fff3c4" opacity=".9"/>
-            <!-- highlights -->
             <path d="M64 63 L238 63" fill="none" stroke="#ffffff" stroke-width="2" opacity=".55" stroke-linecap="round"/>
             <path d="M218 73 Q256 68 296 88" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".5" stroke-linecap="round"/>
             <path d="M150 134 L150 168" fill="none" stroke="#000" stroke-width="2" opacity=".25"/>
@@ -203,14 +222,23 @@
       <div class="heatwrap">
         <div class="controls">
           <button class="icbtn" id="sound" aria-label="Toggle sound"><i class="ti ti-volume"></i></button>
-          <span class="hint">Strike the anvil to forge metal.</span>
+          <span class="hint">Strike the anvil (or press Space) to forge.</span>
         </div>
+
+        <div class="heatlabels"><span>Forge Heat</span><span id="heatLbl">cold</span></div>
+        <div class="heattrack"><div class="heatfill" id="heatFill"></div></div>
+
         <div id="comboWrap" class="combowrap" style="display:none;">
           <div class="combolabels"><span>Combo ×<span id="comboMult">1.0</span></span><span id="comboCount">0 hits</span></div>
           <div class="combotrack"><div class="combofill" id="comboFill"></div></div>
         </div>
-        <div class="sectitle" style="margin-top:18px;">Achievements</div>
-        <div id="achv" class="achvGrid"></div>
+
+        <div class="achvHead" style="margin-top:18px;">
+          <div class="sectitle" style="margin-bottom:0;">Achievements</div>
+          <span class="sectitle" id="achvCount" style="margin-bottom:0;color:var(--gold);"></span>
+        </div>
+        <div id="achv" class="achvGrid" style="margin-top:9px;"></div>
+        <div class="savetag" id="savetag"></div>
       </div>
     </div>
 
@@ -218,27 +246,46 @@
       <div class="stats">
         <div class="stat"><div class="lbl">Metal</div><div class="val" id="score">0</div></div>
         <div class="stat"><div class="lbl">Per click</div><div class="val" id="ppc">1</div></div>
+        <div class="stat"><div class="lbl">Per sec</div><div class="val" id="persec">0</div></div>
       </div>
       <div class="sectitle" style="display:flex;justify-content:space-between;align-items:center;">
-        <span>Leaderboard</span>
+        <span id="boardTitle">Leaderboard</span>
         <button class="mbtn" id="postBtn" style="padding:5px 10px;font-size:12px;">Post my score</button>
       </div>
-      <p class="note">Shared with everyone who has this game. Set your name and password in Settings, then post your best to compete!</p>
+      <p class="note" id="boardNote">Set your name and password in Settings, then post your best to compete!</p>
       <div id="boardList" class="boardlist"><div class="note">Loading…</div></div>
       <button class="prestige" id="prestige" style="margin-top:14px;">Reforge for +<span id="pGain">0</span>% (need 100,000)</button>
     </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="frenzy" id="frenzy"></div>
 
 <div class="modal" id="shopModal">
   <div class="modalCard">
     <div class="modalHead"><span>Upgrades &amp; Skins</span><button class="icbtn" id="closeShop" aria-label="Close"><i class="ti ti-x"></i></button></div>
-    <div class="sectitle">Upgrades · <span id="shopName" style="color:var(--gold);">Metal Blacksmith</span></div>
-    <div id="shop"></div>
-    <button class="reset" id="switchShop" style="display:none;margin-top:8px;">Go to other blacksmith</button>
-    <div class="sectitle" style="margin:18px 0 8px;">Anvil skin</div>
-    <div id="skinGrid" class="skinGrid"></div>
+    <div class="tabbar">
+      <button class="tab on" id="tabUpgrades">Upgrades</button>
+      <button class="tab" id="tabReforge">Reforge Tree</button>
+      <button class="tab" id="tabSkins">Skins</button>
+    </div>
+
+    <div id="paneUpgrades">
+      <div class="sectitle">Upgrades · <span id="shopName" style="color:var(--gold);">Metal Blacksmith</span></div>
+      <div id="shop"></div>
+      <button class="reset" id="switchShop" style="display:none;margin-top:8px;">Go to other blacksmith</button>
+    </div>
+
+    <div id="paneReforge" style="display:none;">
+      <div class="sectitle">Reforge Tree · <span id="repAvail" style="color:var(--gold);">0</span> reputation to spend</div>
+      <p class="note">Reputation comes from Reforging. Spend it on permanent perks — these survive every reforge.</p>
+      <div id="pupGrid" class="pupGrid"></div>
+    </div>
+
+    <div id="paneSkins" style="display:none;">
+      <div class="sectitle">Anvil skin (cosmetic)</div>
+      <div id="skinGrid" class="skinGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -249,7 +296,10 @@
     <label class="row"><span>4-digit password</span><input type="password" id="pwInput" class="nameinput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" style="flex:0 0 90px;text-align:center;letter-spacing:3px;"></label>
     <p class="note">Your password claims your name on the leaderboard, so only you can update your score. Keep it safe; it can't be recovered.</p>
     <label class="row"><span>Sound volume</span><input type="range" id="volRange" min="0" max="100" value="70"></label>
-    <div class="row"><span>Save data</span>
+    <label class="row"><span>Reduced motion</span><input type="checkbox" id="motionChk" style="width:18px;height:18px;"></label>
+    <div class="sectitle" style="margin:14px 0 4px;">Lifetime stats</div>
+    <div id="statBox"></div>
+    <div class="row" style="margin-top:14px;"><span>Save data</span>
       <div style="display:flex;gap:6px;"><button class="mbtn" id="exportBtn">Export</button><button class="mbtn" id="importBtn">Import</button></div>
     </div>
     <textarea id="saveBox" class="savebox" placeholder="Your save code appears here on Export. To import, paste a save code and press Import."></textarea>
@@ -257,156 +307,336 @@
   </div>
 </div>
 
+<div class="modal" id="offlineModal">
+  <div class="modalCard" style="max-width:380px;text-align:center;">
+    <div class="modalHead" style="justify-content:center;"><span>Welcome back, smith!</span></div>
+    <div style="font-size:40px;color:var(--gold);margin:6px 0;"><i class="ti ti-anvil"></i></div>
+    <p class="note" id="offlineBody" style="text-align:center;"></p>
+    <button class="mbtn" id="offlineClose" style="width:100%;margin-top:8px;">Collect</button>
+  </div>
+</div>
+
 <script>
 (function(){
-  var S={prestige:0,shop:0,
-    shops:[
-      {metal:0,ppcLvl:0,owned:[0,0,0,0,0],drill:false},
-      {metal:0,ppcLvl:0,owned:[0,0,0,0,0],drill:false}
-    ],
-    lastSeen:Date.now()};
-  function W(){return S.shops[S.shop];}
-  if(!S.achv)S.achv={};
-  var ACHV=[
-    {id:"m1k",nm:"First Sparks",desc:"Forge 1,000 total metal",bonus:0.02,test:function(){return totalMetal()>=1000;}},
-    {id:"m1m",nm:"Master of Metal",desc:"Forge 1,000,000 total metal",bonus:0.05,test:function(){return totalMetal()>=1e6;}},
-    {id:"own25",nm:"Stockpile",desc:"Own 25 of any one upgrade",bonus:0.03,test:function(){return maxOwned()>=25;}},
-    {id:"own100",nm:"Industrialist",desc:"Own 100 of any one upgrade",bonus:0.05,test:function(){return maxOwned()>=100;}},
-    {id:"reforge1",nm:"Reborn",desc:"Reforge for the first time",bonus:0.05,test:function(){return S.prestige>=1;}},
-    {id:"reforge10",nm:"Veteran Smith",desc:"Reach 10 reputation",bonus:0.10,test:function(){return S.prestige>=10;}},
-    {id:"bothshops",nm:"Two Forges",desc:"Unlock the Iron Blacksmith",bonus:0.05,test:function(){return S.prestige>=3;}}
-  ];
-  function totalMetal(){return (S.totalMetal||0);}
-  function maxOwned(){var m=0;for(var s=0;s<2;s++){var o=S.shops[s].owned;for(var i=0;i<o.length;i++)if(o[i]>m)m=o[i];}return m;}
-  function achvMult(){var b=1;ACHV.forEach(function(a){if(S.achv[a.id])b+=a.bonus;});return b;}
+  "use strict";
 
-  // Cosmetic anvil skins (no score effect)
-  var SKINS=[
-    {id:"iron",nm:"Cast Iron",body:["#4a4d52","#303338","#1c1e22","#0e0f12"],base:["#3a3d42","#0c0d10"],req:function(){return true;},reqText:"Default"},
-    {id:"rusty",nm:"Rusty",body:["#8a5a36","#6b4324","#492c16","#2c1a0d"],base:["#5e3a20","#23140a"],req:function(){return (S.totalMetal||0)>=5000;},reqText:"Forge 5,000 total metal"},
-    {id:"bronze",nm:"Bronze",body:["#d09a4e","#a9722f","#7c4f1d","#4a2f12"],base:["#94652a","#3c2710"],req:function(){return S.prestige>=1;},reqText:"Reforge once"},
-    {id:"obsidian",nm:"Obsidian",body:["#3a3550","#252036","#15121f","#0a0810"],base:["#221d33","#070610"],req:function(){return maxOwned()>=50;},reqText:"Own 50 of one upgrade"},
-    {id:"crimson",nm:"Crimson Steel",body:["#b8424a","#8c2c33","#5e1c20","#330e11"],base:["#7e2429","#2a0c0e"],req:function(){return S.prestige>=5;},reqText:"Reach 5 reputation"},
-    {id:"gold",nm:"Golden",body:["#ffdf80","#e8b53e","#bb8a1e","#7c5a10"],base:["#d29f2a","#6e500e"],req:function(){return (S.totalMetal||0)>=1e6;},reqText:"Forge 1,000,000 total metal"}
+  /* ---------- static config ---------- */
+  var SHOPS=[
+    {name:"Metal Blacksmith",costMul:1,hammerBase:50,tiers:[
+      {nm:"Apprentice",base:15,mps:0.2},
+      {nm:"Bellows",base:120,mps:1.4},
+      {nm:"Forge",base:1300,mps:9},
+      {nm:"Foundry",base:14000,mps:55},
+      {nm:"Steelworks",base:200000,mps:340},
+      {nm:"Mythril Mill",base:3000000,mps:2400},
+      {nm:"Titan Forge",base:45000000,mps:16000}
+    ]},
+    {name:"Iron Blacksmith",costMul:1.1,hammerBase:80,tiers:[
+      {nm:"Runesmith",base:50,mps:0.6},
+      {nm:"Ember Kiln",base:450,mps:4.5},
+      {nm:"Crystal Press",base:5000,mps:30},
+      {nm:"Void Furnace",base:60000,mps:200},
+      {nm:"Starforge",base:850000,mps:1300},
+      {nm:"Aether Loom",base:11000000,mps:8500},
+      {nm:"Singularity",base:160000000,mps:60000}
+    ]}
   ];
-  if(!S.skin)S.skin="iron";
+  var NTIER=7, DRILL_COST=50000, CRIT_MULT=7, HEAT_ADD=7, HEAT_DECAY=10;
+  var FRENZY_MS=13000, PROD_FRENZY=7, CLICK_FRENZY=77;
+
+  var PUPS=[
+    {id:"sharp", nm:"Sharpened Hammers", ds:"+25% click power per level", max:25, cost:function(l){return l+1;}},
+    {id:"effic", nm:"Efficient Forges",  ds:"+25% metal/sec per level",    max:25, cost:function(l){return l+1;}},
+    {id:"moment",nm:"Momentum",          ds:"Each click also gains +2% of your metal/sec", max:25, cost:function(l){return l+1;}},
+    {id:"lucky", nm:"Lucky Strikes",     ds:"+2% critical chance per level (base 1%)", max:20, cost:function(l){return l+2;}},
+    {id:"night", nm:"Night Shift",       ds:"+8% offline earnings per level (base 50%)", max:10, cost:function(l){return 2*(l+1);}},
+    {id:"prosp", nm:"Prospector",        ds:"Golden ingots appear 12% more often", max:10, cost:function(l){return 2*(l+1);}},
+    {id:"auto",  nm:"Auto-Forge",        ds:"+1 auto-strike/sec (needs Power Drill)", max:15, cost:function(l){return 2*(l+1);}},
+    {id:"head",  nm:"Head Start",        ds:"Begin each reforge with a metal stockpile", max:10, cost:function(l){return 3*(l+1);}}
+  ];
+
+  var ACHV=[
+    {id:"m1k",  nm:"First Sparks",   desc:"Forge 1,000 total metal", bonus:0.02, test:function(){return S.totalMetal>=1000;}},
+    {id:"m1m",  nm:"Master of Metal",desc:"Forge 1,000,000 total metal", bonus:0.05, test:function(){return S.totalMetal>=1e6;}},
+    {id:"m1b",  nm:"Mountain of Steel",desc:"Forge 1,000,000,000 total metal", bonus:0.08, test:function(){return S.totalMetal>=1e9;}},
+    {id:"clk100",nm:"Warming Up",    desc:"Strike the anvil 100 times", bonus:0.02, test:function(){return S.stats.clicks>=100;}},
+    {id:"clk1k", nm:"Hammer Time",   desc:"Strike the anvil 1,000 times", bonus:0.03, test:function(){return S.stats.clicks>=1000;}},
+    {id:"clk10k",nm:"Iron Wrist",    desc:"Strike the anvil 10,000 times", bonus:0.05, test:function(){return S.stats.clicks>=10000;}},
+    {id:"own25", nm:"Stockpile",     desc:"Own 25 of any one upgrade", bonus:0.03, test:function(){return maxOwned()>=25;}},
+    {id:"own100",nm:"Industrialist", desc:"Own 100 of any one upgrade", bonus:0.05, test:function(){return maxOwned()>=100;}},
+    {id:"mps1k", nm:"Assembly Line", desc:"Reach 1,000 metal/sec", bonus:0.04, test:function(){return mpsRaw()*pMult()*achvBaseMult()>=1000;}},
+    {id:"mps100k",nm:"Mega Forge",   desc:"Reach 100,000 metal/sec", bonus:0.06, test:function(){return mpsRaw()*pMult()*achvBaseMult()>=1e5;}},
+    {id:"crit100",nm:"Sharpshooter", desc:"Land 100 critical strikes", bonus:0.04, test:function(){return S.stats.criticals>=100;}},
+    {id:"ingot10",nm:"Treasure Hunter",desc:"Click 10 golden ingots", bonus:0.04, test:function(){return S.stats.ingots>=10;}},
+    {id:"hothot",nm:"Red Hot",       desc:"Max out the forge heat", bonus:0.03, test:function(){return S.stats.maxedHeat;}},
+    {id:"reforge1",nm:"Reborn",      desc:"Reforge for the first time", bonus:0.05, test:function(){return S.prestige>=1;}},
+    {id:"reforge10",nm:"Veteran Smith",desc:"Reach 10 reputation", bonus:0.10, test:function(){return S.prestige>=10;}},
+    {id:"reforge50",nm:"Living Legend",desc:"Reach 50 reputation", bonus:0.15, test:function(){return S.prestige>=50;}},
+    {id:"bothshops",nm:"Two Forges", desc:"Unlock the Iron Blacksmith", bonus:0.05, test:function(){return S.prestige>=3;}}
+  ];
+
+  var SKINS=[
+    {id:"iron",   nm:"Cast Iron",   body:["#4a4d52","#303338","#1c1e22","#0e0f12"],base:["#3a3d42","#0c0d10"],req:function(){return true;},reqText:"Default"},
+    {id:"rusty",  nm:"Rusty",       body:["#8a5a36","#6b4324","#492c16","#2c1a0d"],base:["#5e3a20","#23140a"],req:function(){return S.totalMetal>=5000;},reqText:"Forge 5,000 total metal"},
+    {id:"steel",  nm:"Bright Steel",body:["#c7ccd2","#9097a0","#5c636c","#2f343b"],base:["#7e858f","#23272d"],req:function(){return S.totalMetal>=50000;},reqText:"Forge 50,000 total metal"},
+    {id:"bronze", nm:"Bronze",      body:["#d09a4e","#a9722f","#7c4f1d","#4a2f12"],base:["#94652a","#3c2710"],req:function(){return S.prestige>=1;},reqText:"Reforge once"},
+    {id:"obsidian",nm:"Obsidian",   body:["#3a3550","#252036","#15121f","#0a0810"],base:["#221d33","#070610"],req:function(){return maxOwned()>=50;},reqText:"Own 50 of one upgrade"},
+    {id:"emerald",nm:"Emerald",     body:["#4fae72","#2f7e4d","#1c5232","#0d2a1a"],base:["#2a6f44","#0c2417"],req:function(){return maxOwned()>=75;},reqText:"Own 75 of one upgrade"},
+    {id:"crimson",nm:"Crimson Steel",body:["#b8424a","#8c2c33","#5e1c20","#330e11"],base:["#7e2429","#2a0c0e"],req:function(){return S.prestige>=5;},reqText:"Reach 5 reputation"},
+    {id:"frost",  nm:"Frost Iron",  body:["#7fb4d6","#4d82a8","#2c5572","#15303f"],base:["#3f6f90","#122733"],req:function(){return S.prestige>=8;},reqText:"Reach 8 reputation"},
+    {id:"gold",   nm:"Golden",      body:["#ffdf80","#e8b53e","#bb8a1e","#7c5a10"],base:["#d29f2a","#6e500e"],req:function(){return S.totalMetal>=1e6;},reqText:"Forge 1,000,000 total metal"}
+  ];
+
+  var KEY="metalclicker:save", LB_KEY="metalclicker:leaderboard", LOCAL_LB="metalclicker:localboard";
+
+  /* ---------- state ---------- */
+  function newShop(){return {metal:0,hammer:0,owned:[0,0,0,0,0,0,0],drill:false};}
+  function freshState(){
+    return {v:2,shop:0,prestige:0,repAvail:0,pUp:{},
+      shops:[newShop(),newShop()],
+      totalMetal:0,runMetal:0,achv:{},skin:"iron",
+      stats:{clicks:0,criticals:0,ingots:0,reforges:0,maxedHeat:false},
+      name:"",pw:"",vol:0.7,sound:true,reducedMotion:false,
+      lastSeen:Date.now()};
+  }
+  var S=freshState();
+  function W(){return S.shops[S.shop];}
+
+  /* ---------- helpers ---------- */
+  function lvl(id){return (S.pUp&&S.pUp[id])||0;}
+  function curTiers(){return SHOPS[S.shop].tiers;}
+  function maxOwned(){var m=0;for(var s=0;s<2;s++){var o=S.shops[s].owned;for(var i=0;i<o.length;i++)if(o[i]>m)m=o[i];}return m;}
+  function shopUnlocked(){return S.prestige>=3;}
+  function reduced(){return !!S.reducedMotion;}
+
+  var fmt=function(x){
+    if(!isFinite(x))return '∞';
+    var neg=x<0;x=Math.floor(Math.abs(x));
+    if(x<1e4)return (neg?'-':'')+x.toLocaleString();
+    var units=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','UDc','DDc'];
+    var e=Math.floor(Math.log10(x)/3);if(e>=units.length)e=units.length-1;
+    var v=x/Math.pow(10,e*3);
+    return (neg?'-':'')+(v>=100?v.toFixed(0):v.toFixed(2).replace(/\.?0+$/,''))+units[e];
+  };
+  function fmtTime(s){s=Math.floor(s);var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+    if(h>0)return h+'h '+m+'m';if(m>0)return m+'m '+sec+'s';return sec+'s';}
+
+  /* ---------- multipliers / production ---------- */
+  function pMult(){return 1+S.prestige*0.1;}
+  function achvBaseMult(){var b=1;for(var i=0;i<ACHV.length;i++)if(S.achv[ACHV[i].id])b+=ACHV[i].bonus;return b;}
+  function achvMult(){return achvBaseMult();}
+  function comboMult(){return 1+Math.min(combo,50)*0.04;}
+  function heatBonus(){return 1+(heat/100)*0.6;}
+  function critChance(){return Math.min(0.9,0.01+lvl("lucky")*0.02);}
+  function prodFrenzyOn(){return Date.now()<prodFrenzyUntil;}
+  function clickFrenzyOn(){return Date.now()<clickFrenzyUntil;}
+
+  function mpsRaw(){var w=W(),T=curTiers(),m=0;for(var i=0;i<NTIER;i++)m+=w.owned[i]*T[i].mps;return m;}
+  function mps(){
+    var m=mpsRaw()*pMult()*achvMult()*(1+0.25*lvl("effic"));
+    if(prodFrenzyOn())m*=PROD_FRENZY;
+    return m;
+  }
+  // raw per-click before combo/heat/crit/click-frenzy
+  function clickPower(){
+    var base=1+W().hammer;
+    base+=mpsRaw()*pMult()*achvMult()*(1+0.25*lvl("effic"))*(0.02*lvl("moment"));
+    base*=pMult()*achvMult()*(1+0.25*lvl("sharp"));
+    return base;
+  }
+  // displayed/effective per click (manual), includes combo+heat+frenzy
+  function clickValue(){
+    var v=clickPower()*comboMult()*heatBonus();
+    if(clickFrenzyOn())v*=CLICK_FRENZY;
+    return v;
+  }
+
+  function tierCost(i){return Math.round(curTiers()[i].base*Math.pow(1.15,W().owned[i])*SHOPS[S.shop].costMul);}
+  function hammerCost(){return Math.round(SHOPS[S.shop].hammerBase*Math.pow(1.6,W().hammer)*SHOPS[S.shop].costMul);}
+  function drillCost(){return Math.round(DRILL_COST*SHOPS[S.shop].costMul);}
+  function pendingP(){return Math.floor(Math.sqrt(S.runMetal/1e5));}
+  function offlineEff(){return Math.min(1,0.5+lvl("night")*0.08);}
+  function autoRate(){return W().drill?(3+lvl("auto")):0;}
+  function headStartMetal(){var l=lvl("head");return l<=0?0:250*Math.pow(4,l);}
+
+  /* ---------- runtime (not saved) ---------- */
+  var combo=0,lastTap=0,heat=0,autoAcc=0;
+  var prodFrenzyUntil=0,clickFrenzyUntil=0;
+  var soundOn=true,vol=0.7,ac=null,playerName='',playerPw='';
+  var ingotTimer=null,ingotEl=null;
+
+  var stage=document.getElementById('stage'), anvil=document.getElementById('anvil');
+
+  /* ---------- audio ---------- */
+  function ctx(){if(!ac){try{ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){ac=null;}}return ac;}
+  function beep(f,d){if(!soundOn||vol<=0)return;var a=ctx();if(!a)return;try{
+    var o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);
+    o.frequency.value=f;o.type='square';g.gain.setValueAtTime(.06*vol,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch(e){}}
+  function clang(big){if(!soundOn||vol<=0)return;var a=ctx();if(!a)return;try{
+    var t=a.currentTime;
+    var nb=a.createBuffer(1,a.sampleRate*0.05,a.sampleRate),dat=nb.getChannelData(0);
+    for(var i=0;i<dat.length;i++)dat[i]=(Math.random()*2-1)*Math.pow(1-i/dat.length,2.5);
+    var ns=a.createBufferSource();ns.buffer=nb;
+    var nf=a.createBiquadFilter();nf.type='highpass';nf.frequency.value=2500;
+    var ng=a.createGain();ng.gain.setValueAtTime((big?0.7:0.5)*vol,t);ng.gain.exponentialRampToValueAtTime(.0001,t+0.05);
+    ns.connect(nf);nf.connect(ng);ng.connect(a.destination);ns.start(t);ns.stop(t+0.05);
+    var parts=big?[1500,2300,3300]:[2100,3170,4480],vols=[0.22,0.14,0.08];
+    for(var p=0;p<parts.length;p++){(function(p){
+      var o=a.createOscillator(),g=a.createGain();o.type='triangle';
+      o.frequency.setValueAtTime(parts[p]*(0.99+Math.random()*0.02),t);
+      g.gain.setValueAtTime(vols[p]*vol,t+0.002);g.gain.exponentialRampToValueAtTime(.0001,t+0.28+p*0.04);
+      o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+0.34);
+    })(p);}
+  }catch(e){}}
+  function chime(){if(!soundOn||vol<=0)return;var a=ctx();if(!a)return;try{
+    var t=a.currentTime,notes=[660,880,1320];
+    for(var i=0;i<notes.length;i++){(function(i){var o=a.createOscillator(),g=a.createGain();o.type='triangle';
+      o.frequency.value=notes[i];g.gain.setValueAtTime(.0001,t+i*0.06);g.gain.linearRampToValueAtTime(.12*vol,t+i*0.06+0.01);
+      g.gain.exponentialRampToValueAtTime(.0001,t+i*0.06+0.4);o.connect(g);g.connect(a.destination);
+      o.start(t+i*0.06);o.stop(t+i*0.06+0.45);})(i);}
+  }catch(e){}}
+
+  /* ---------- effects ---------- */
+  function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},3200);}
+  function floatText(txt,crit){if(reduced())return;var el=document.createElement('div');el.className='float'+(crit?' crit':'');
+    el.textContent=txt;el.style.left=(46+(Math.random()-.5)*60)+'%';el.style.top=(48+Math.random()*22)+'px';
+    stage.appendChild(el);setTimeout(function(){el.remove();},850);}
+  function sparks(big){if(reduced())return;var r=stage.getBoundingClientRect();var cx=r.width*.46,cy=88,
+    cols=(S.shop===1)?['#eaf6ff','#9bd4ff','#5aa8ff','#2f7fe0']:['#fff3c4','#ffd23a','#ff9a2f','#ff5a1f'];
+    var n=big?16:9;
+    for(var i=0;i<n;i++){(function(){var s=document.createElement('div');s.className='spark';
+      var sz=2+Math.random()*(big?6:4);s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=cx+'px';s.style.top=cy+'px';
+      var c=cols[Math.floor(Math.random()*cols.length)];s.style.background=c;s.style.boxShadow='0 0 6px '+c;
+      var dx=(Math.random()-.5)*(big?180:120),dy=-(25+Math.random()*(big?100:60));stage.appendChild(s);
+      requestAnimationFrame(function(){s.style.transition='transform .55s cubic-bezier(.2,.6,.4,1),opacity .55s';
+        s.style.transform='translate('+dx+'px,'+dy+'px)';s.style.opacity='0';});
+      setTimeout(function(){s.remove();},560);})();}}
+  function shake(){if(reduced())return;stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake');}
+
+  /* ---------- core actions ---------- */
+  function gain(amt){if(amt<=0)return;W().metal+=amt;S.totalMetal+=amt;S.runMetal+=amt;}
+  function tap(auto){
+    var v,crit=false;
+    if(auto){v=clickPower();if(clickFrenzyOn())v*=CLICK_FRENZY;}
+    else{
+      var now=Date.now();
+      if(now-lastTap<1100)combo++;else combo=1;lastTap=now;
+      heat=Math.min(100,heat+HEAT_ADD);if(heat>=100&&!S.stats.maxedHeat)S.stats.maxedHeat=true;
+      S.stats.clicks++;v=clickValue();
+    }
+    if(Math.random()<critChance()){crit=true;v*=CRIT_MULT;S.stats.criticals++;}
+    gain(v);
+    if(!auto){floatText((crit?'CRIT +':'+')+fmt(v),crit);sparks(crit);clang(crit);if(crit)shake();}
+    else if(crit&&!reduced())sparks(false);
+  }
+  anvil.addEventListener('click',function(){tap(false);});
+  // keyboard: space / enter strike (ignore when typing in inputs)
+  document.addEventListener('keydown',function(e){
+    if((e.code==='Space'||e.code==='Enter')&&document.activeElement&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))return;
+    if(e.code==='Space'){e.preventDefault();tap(false);anvil.classList.add('kbtap');setTimeout(function(){anvil.classList.remove('kbtap');},80);}
+  });
+
+  /* ---------- golden ingots ---------- */
+  function scheduleIngot(){
+    clearTimeout(ingotTimer);
+    var base=90000+Math.random()*60000;
+    base*=Math.pow(0.88,lvl("prosp"));
+    ingotTimer=setTimeout(spawnIngot,base);
+  }
+  function spawnIngot(){
+    if(ingotEl)return;
+    var b=document.createElement('button');b.className='ingot';b.setAttribute('aria-label','Golden ingot');
+    b.innerHTML='<i class="ti ti-diamond"></i>';
+    b.style.left=(15+Math.random()*60)+'%';b.style.top=(20+Math.random()*55)+'%';
+    b.addEventListener('click',function(ev){ev.stopPropagation();collectIngot();});
+    stage.appendChild(b);ingotEl=b;
+    // despawn if ignored
+    b._to=setTimeout(function(){if(ingotEl===b){b.remove();ingotEl=null;scheduleIngot();}},13000);
+  }
+  function collectIngot(){
+    if(!ingotEl)return;clearTimeout(ingotEl._to);ingotEl.remove();ingotEl=null;
+    S.stats.ingots++;chime();
+    var roll=Math.random();
+    if(roll<0.6){var bonus=Math.max(clickPower()*25,mps()*45);if(bonus<10)bonus=10+W().metal*0.05;gain(bonus);
+      toast('Lucky ingot! +'+fmt(bonus)+' metal');}
+    else if(roll<0.85){prodFrenzyUntil=Date.now()+FRENZY_MS;toast('Forge Frenzy! ×'+PROD_FRENZY+' metal/sec for '+(FRENZY_MS/1000)+'s');}
+    else{clickFrenzyUntil=Date.now()+FRENZY_MS;toast('Click Frenzy! ×'+CLICK_FRENZY+' per click for '+(FRENZY_MS/1000)+'s');}
+    renderFrenzy();scheduleIngot();save();
+  }
+
+  /* ---------- shop UI ---------- */
+  function buildShop(){var sh=document.getElementById('shop');sh.innerHTML='';var T=curTiers();
+    var pc=document.createElement('button');pc.className='shopbtn';pc.id='ppcBtn';
+    pc.addEventListener('click',function(){var c=hammerCost();if(W().metal>=c){W().metal-=c;W().hammer++;beep(440,.09);renderShop();save();}});
+    sh.appendChild(pc);
+    for(var i=0;i<NTIER;i++){(function(i){var b=document.createElement('button');b.className='shopbtn';b.dataset.t=i;
+      b.addEventListener('click',function(){var c=tierCost(i);if(W().metal>=c){W().metal-=c;W().owned[i]++;beep(330,.08);renderShop();save();}});
+      sh.appendChild(b);
+      if(i===NTIER-1){var d=document.createElement('button');d.className='shopbtn';d.id='drillBtn';
+        d.addEventListener('click',function(){var dc=drillCost();if(!W().drill&&W().metal>=dc){W().metal-=dc;W().drill=true;beep(220,.25);toast('Power Drill unlocked! Auto-striking enabled');renderShop();save();}});
+        sh.appendChild(d);}})(i);}
+  }
+  function renderShop(){
+    var w=W(),T=curTiers();
+    var pc=document.getElementById('ppcBtn');if(!pc)return;
+    var hCost=hammerCost();
+    pc.innerHTML='<span><span class="nm">Hammer</span><div class="meta">cost '+fmt(hCost)+' · +1 base per click</div></span><span class="own">L'+w.hammer+'</span>';
+    pc.disabled=w.metal<hCost;pc.classList.toggle('afford',w.metal>=hCost);
+    for(var i=0;i<NTIER;i++){var b=document.querySelector('.shopbtn[data-t="'+i+'"]');if(!b)continue;
+      var tCost=tierCost(i);
+      b.innerHTML='<span><span class="nm">'+T[i].nm+'</span><div class="meta">cost '+fmt(tCost)+' · +'+T[i].mps+'/sec each</div></span><span class="own">'+w.owned[i]+'</span>';
+      b.disabled=w.metal<tCost;b.classList.toggle('afford',w.metal>=tCost);}
+    var db=document.getElementById('drillBtn');
+    if(db){if(w.drill){db.innerHTML='<span><span class="nm"><i class="ti ti-drill" style="vertical-align:-2px"></i> Power Drill</span><div class="meta">auto-strikes '+autoRate()+'×/sec (upgrade in Reforge Tree)</div></span><span class="own">ON</span>';db.disabled=true;db.classList.remove('afford');}
+      else{db.innerHTML='<span><span class="nm"><i class="ti ti-drill" style="vertical-align:-2px"></i> Power Drill</span><div class="meta">unlock '+fmt(drillCost())+' · auto-strikes for you</div></span><span class="own">&#9889;</span>';db.disabled=w.metal<drillCost();db.classList.toggle('afford',w.metal>=drillCost());}}
+    document.getElementById('shopName').textContent=SHOPS[S.shop].name;
+    var sw=document.getElementById('switchShop');
+    if(shopUnlocked()){sw.style.display='';sw.textContent='Go to '+SHOPS[1-S.shop].name;}else sw.style.display='none';
+  }
+
+  /* ---------- reforge tree UI ---------- */
+  function buildPups(){var g=document.getElementById('pupGrid');g.innerHTML='';
+    PUPS.forEach(function(p){var el=document.createElement('div');el.className='pupItem';el.dataset.p=p.id;
+      var btn=document.createElement('button');btn.className='pupBuy';
+      btn.addEventListener('click',function(){buyPup(p);});
+      el.innerHTML='<div><div class="nm">'+p.nm+'</div><div class="ds">'+p.ds+'</div><div class="lv" data-lv></div></div>';
+      el.appendChild(btn);g.appendChild(el);});
+    renderPups();}
+  function buyPup(p){var l=lvl(p.id);if(l>=p.max)return;var c=p.cost(l);if(S.repAvail<c)return;
+    S.repAvail-=c;S.pUp[p.id]=l+1;beep(620,.12);renderPups();renderShop();save();}
+  function renderPups(){
+    document.getElementById('repAvail').textContent=fmt(S.repAvail);
+    PUPS.forEach(function(p){var el=document.querySelector('.pupItem[data-p="'+p.id+'"]');if(!el)return;
+      var l=lvl(p.id),btn=el.querySelector('.pupBuy'),lvEl=el.querySelector('[data-lv]');
+      lvEl.textContent='Level '+l+' / '+p.max;
+      if(l>=p.max){btn.textContent='MAX';btn.disabled=true;btn.classList.add('max');}
+      else{var c=p.cost(l);btn.classList.remove('max');btn.textContent=c+' rep';btn.disabled=S.repAvail<c;}});
+  }
+
+  /* ---------- achievements ---------- */
+  function buildAchv(){var ac2=document.getElementById('achv');ac2.innerHTML='';
+    ACHV.forEach(function(a){var el=document.createElement('div');el.className='achvItem';el.dataset.a=a.id;ac2.appendChild(el);});}
+  function renderAchv(){var got=0;
+    ACHV.forEach(function(a){var el=document.querySelector('.achvItem[data-a="'+a.id+'"]');if(!el)return;
+      var has=!!S.achv[a.id];if(has)got++;el.className='achvItem'+(has?' got':'');
+      el.innerHTML='<i class="ti '+(has?'ti-trophy':'ti-lock')+'"></i><span><b>'+a.nm+'</b><br>'+a.desc+' · +'+Math.round(a.bonus*100)+'%</span>';});
+    document.getElementById('achvCount').textContent=got+' / '+ACHV.length;}
+  function checkAchv(){var newly=false;ACHV.forEach(function(a){
+    if(!S.achv[a.id]&&a.test()){S.achv[a.id]=true;newly=true;beep(720,.2);toast('Achievement: '+a.nm+'  (+'+Math.round(a.bonus*100)+'% output)');}});
+    if(newly){renderAchv();save();}}
+
+  /* ---------- skins ---------- */
   function skinUnlocked(sk){try{return sk.req();}catch(e){return false;}}
   function applySkin(){var sk=null;for(var i=0;i<SKINS.length;i++)if(SKINS[i].id===S.skin)sk=SKINS[i];
     if(!sk||!skinUnlocked(sk))sk=SKINS[0];
     var set=function(id,c){var el=document.getElementById(id);if(el)el.setAttribute('stop-color',c);};
     set('ig0',sk.body[0]);set('ig1',sk.body[1]);set('ig2',sk.body[2]);set('ig3',sk.body[3]);
     set('ib0',sk.base[0]);set('ib1',sk.base[1]);}
-
-  var DRILL_COST=50000;
-  var SHOPS=[
-    {name:"Metal Blacksmith",costMul:1,ppcBase:50,hammerRate:0.5,tiers:[
-      {nm:"Apprentice",base:15,rate:0.5},
-      {nm:"Forge",base:110,rate:12},
-      {nm:"Foundry",base:1200,rate:24},
-      {nm:"Steelworks",base:13000,rate:72},
-      {nm:"Mythril Mill",base:30000,rate:145}
-    ]},
-    {name:"Iron Blacksmith",costMul:1.1,ppcBase:80,hammerRate:0.5,tiers:[
-      {nm:"Runesmith",base:40,rate:1.5},
-      {nm:"Ember Kiln",base:300,rate:20},
-      {nm:"Crystal Press",base:2500,rate:45},
-      {nm:"Void Furnace",base:20000,rate:130},
-      {nm:"Starforge",base:60000,rate:300}
-    ]}
-  ];
-  var KEY="metalclicker:save";
-  var stage=document.getElementById('stage'), anvil=document.getElementById('anvil');
-  var soundOn=true, ac=null, vol=0.7, playerName='', playerPw='';
-  var combo=0, lastTap=0;
-  function comboMult(){return 1+Math.min(combo,50)*0.04;}
-  var LB_KEY="metalclicker:leaderboard";
-  var fmt=function(x){x=Math.round(x);
-    if(x<1e4)return x.toLocaleString();
-    var units=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
-    var e=Math.floor(Math.log10(Math.abs(x))/3);if(e>=units.length)e=units.length-1;
-    var v=x/Math.pow(10,e*3);
-    return (v>=100?v.toFixed(0):v.toFixed(2).replace(/\.?0+$/,''))+units[e];};
-
-  function pMult(){return 1+S.prestige*0.1;}
-  function curTiers(){return SHOPS[S.shop].tiers;}
-  function clickBase(){var w=W(),T=curTiers();var hr=SHOPS[S.shop].hammerRate||1;var r=1+w.ppcLvl*hr;for(var i=0;i<T.length;i++)r+=w.owned[i]*T[i].rate;return r;}
-  function ppcVal(){return clickBase()*pMult()*achvMult()*comboMult();}
-  function costMult(){return SHOPS[S.shop].costMul;}
-  function tierCost(i){var T=curTiers();return Math.round(T[i].base*Math.pow(1.4,W().owned[i])*costMult());}
-  function ppcCost(){return Math.round(SHOPS[S.shop].ppcBase*Math.pow(1.9,W().ppcLvl)*costMult());}
-  function drillCost(){return Math.round(DRILL_COST*costMult());}
-  function pendingP(){return Math.floor(Math.sqrt(W().metal/100000));}
-  function shopUnlocked(){return S.prestige>=3;}
-
-  function beep(f,d){if(!soundOn||vol<=0)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
-    var o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
-    o.frequency.value=f;o.type='square';g.gain.setValueAtTime(.06*vol,ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.start();o.stop(ac.currentTime+d);}catch(e){}}
-
-  function clang(){if(!soundOn||vol<=0)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
-    var t=ac.currentTime;
-    var nb=ac.createBuffer(1,ac.sampleRate*0.05,ac.sampleRate),dat=nb.getChannelData(0);
-    for(var i=0;i<dat.length;i++)dat[i]=(Math.random()*2-1)*Math.pow(1-i/dat.length,2.5);
-    var ns=ac.createBufferSource();ns.buffer=nb;
-    var nf=ac.createBiquadFilter();nf.type='highpass';nf.frequency.value=2500;
-    var ng=ac.createGain();ng.gain.setValueAtTime(0.5*vol,t);ng.gain.exponentialRampToValueAtTime(.0001,t+0.05);
-    ns.connect(nf);nf.connect(ng);ng.connect(ac.destination);ns.start(t);ns.stop(t+0.05);
-    var parts=[2100,3170,4480],vols=[0.22,0.14,0.08];
-    for(var p=0;p<parts.length;p++){(function(p){
-      var o=ac.createOscillator(),g=ac.createGain();o.type='triangle';
-      o.frequency.setValueAtTime(parts[p]*(0.99+Math.random()*0.02),t);
-      g.gain.setValueAtTime(vols[p]*vol,t+0.002);g.gain.exponentialRampToValueAtTime(.0001,t+0.28+p*0.04);
-      o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+0.34);
-    })(p);}
-  }catch(e){}}
-
-  function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-    clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},3200);}
-
-  function floatText(t){var el=document.createElement('div');el.className='float';el.textContent=t;
-    el.style.left=(46+(Math.random()-.5)*60)+'%';el.style.top=(48+Math.random()*22)+'px';
-    stage.appendChild(el);setTimeout(function(){el.remove();},850);}
-  function sparks(){var r=stage.getBoundingClientRect();var cx=r.width*.46,cy=88,
-    cols=(S.shop===1)?['#eaf6ff','#9bd4ff','#5aa8ff','#2f7fe0']:['#fff3c4','#ffd23a','#ff9a2f','#ff5a1f'];
-    for(var i=0;i<9;i++){(function(){var s=document.createElement('div');s.className='spark';
-      var sz=2+Math.random()*4;s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=cx+'px';s.style.top=cy+'px';
-      var c=cols[Math.floor(Math.random()*cols.length)];s.style.background=c;s.style.boxShadow='0 0 6px '+c;
-      var dx=(Math.random()-.5)*120,dy=-(25+Math.random()*60);stage.appendChild(s);
-      requestAnimationFrame(function(){s.style.transition='transform .55s cubic-bezier(.2,.6,.4,1),opacity .55s';
-        s.style.transform='translate('+dx+'px,'+dy+'px)';s.style.opacity='0';});
-      setTimeout(function(){s.remove();},560);})();}}
-
-  function gain(amt){W().metal+=amt;S.totalMetal=(S.totalMetal||0)+amt;}
-  function tap(){var now=Date.now();
-    if(now-lastTap<1100)combo++;else combo=1;lastTap=now;
-    var g=ppcVal();gain(g);floatText('+'+fmt(g));sparks();clang();render();}
-  anvil.addEventListener('click',tap);
-
-  function buildShop(){var sh=document.getElementById('shop');sh.innerHTML='';var T=curTiers();
-    var pc=document.createElement('button');pc.className='shopbtn';pc.id='ppcBtn';sh.appendChild(pc);
-    for(var i=0;i<T.length;i++){(function(i){var b=document.createElement('button');b.className='shopbtn';b.dataset.t=i;
-      b.addEventListener('click',function(){var c=tierCost(i);
-        if(W().metal>=c){W().metal-=c;W().owned[i]++;beep(330,.08);render();save();}});
-      sh.appendChild(b);
-      if(i===T.length-1){var d=document.createElement('button');d.className='shopbtn';d.id='drillBtn';
-        d.addEventListener('click',function(){var dc=drillCost();if(!W().drill&&W().metal>=dc){W().metal-=dc;W().drill=true;beep(220,.25);toast('Power Drill unlocked! Auto-forging every 10ms');render();save();}});
-        sh.appendChild(d);}    })(i);}
-    pc.addEventListener('click',function(){var c=ppcCost();
-      if(W().metal>=c){W().metal-=c;W().ppcLvl++;beep(440,.09);render();save();}});}
-
-  function checkAchv(){var newly=false;ACHV.forEach(function(a){
-    if(!S.achv[a.id]&&a.test()){S.achv[a.id]=true;newly=true;beep(720,.2);toast('Achievement: '+a.nm+'  (+'+Math.round(a.bonus*100)+'% output)');}});
-    if(newly){renderAchv();save();}}
-  function buildAchv(){var ac=document.getElementById('achv');if(!ac)return;ac.innerHTML='';
-    ACHV.forEach(function(a){var el=document.createElement('div');el.className='achvItem';el.dataset.a=a.id;ac.appendChild(el);});}
-  function renderAchv(){ACHV.forEach(function(a){var el=document.querySelector('.achvItem[data-a="'+a.id+'"]');if(!el)return;
-    var got=!!S.achv[a.id];el.className='achvItem'+(got?' got':'');
-    el.innerHTML='<i class="ti '+(got?'ti-trophy':'ti-lock')+'"></i><span><b>'+a.nm+'</b><br>'+a.desc+' · +'+Math.round(a.bonus*100)+'%</span>';});}
-
-  function buildSkins(){var g=document.getElementById('skinGrid');if(!g)return;g.innerHTML='';
+  function buildSkins(){var g=document.getElementById('skinGrid');g.innerHTML='';
     SKINS.forEach(function(sk){var c=document.createElement('div');c.className='skinCell';c.dataset.skin=sk.id;
-      c.addEventListener('click',function(){
-        if(!skinUnlocked(sk)){toast('Locked: '+sk.reqText);return;}
+      c.addEventListener('click',function(){if(!skinUnlocked(sk)){toast('Locked: '+sk.reqText);return;}
         S.skin=sk.id;beep(500,.1);applySkin();renderSkins();save();});
       g.appendChild(c);});renderSkins();}
   function renderSkins(){SKINS.forEach(function(sk){var c=document.querySelector('.skinCell[data-skin="'+sk.id+'"]');if(!c)return;
@@ -415,145 +645,237 @@
     var grad='linear-gradient(135deg,'+sk.body[0]+','+sk.body[2]+')';
     c.innerHTML='<div class="skinSwatch" style="background:'+grad+'"></div><div class="skinName">'+(unlocked?sk.nm:'<i class="ti ti-lock"></i> '+sk.nm)+'</div>'+(unlocked?'':'<div class="skinReq">'+sk.reqText+'</div>');});}
 
-  function render(){
-    var w=W(),T=curTiers();
-    var pc=document.getElementById('ppcBtn');
-    if(!pc)return;
+  /* ---------- main numeric render (light, every frame) ---------- */
+  function renderLive(){
+    var w=W();
     document.getElementById('score').textContent=fmt(w.metal);
-    document.getElementById('ppc').textContent=fmt(ppcVal());
-    document.getElementById('rep').textContent=S.prestige>0?('Reputation '+S.prestige+'  ·  x'+pMult().toFixed(1)+' output'):'';
-    var hCost=ppcCost();
-    pc.innerHTML='<span><span class="nm">Hammer</span><div class="meta">cost '+fmt(hCost)+' · +'+(SHOPS[S.shop].hammerRate||1)+'/click each</div></span><span class="own">L'+w.ppcLvl+'</span>';
-    pc.disabled=w.metal<hCost;
-    for(var i=0;i<T.length;i++){var b=document.querySelector('.shopbtn[data-t="'+i+'"]');if(!b)continue;
-      var tCost=tierCost(i);
-      b.innerHTML='<span><span class="nm">'+T[i].nm+'</span><div class="meta">cost '+fmt(tCost)+' · +'+T[i].rate+'/click each</div></span><span class="own">'+w.owned[i]+'</span>';
-      b.disabled=w.metal<tCost;}
-    var db=document.getElementById('drillBtn');
-    if(db){if(w.drill){db.innerHTML='<span><span class="nm"><i class="ti ti-drill" style="vertical-align:-2px"></i> Power Drill</span><div class="meta">auto-forges your per-click every 10ms</div></span><span class="own">ON</span>';db.disabled=true;}
-      else{db.innerHTML='<span><span class="nm"><i class="ti ti-drill" style="vertical-align:-2px"></i> Power Drill</span><div class="meta">unlock '+fmt(drillCost())+' · auto-forge every 10ms</div></span><span class="own">&#9889;</span>';db.disabled=w.metal<drillCost();}}
-    var pg=pendingP();document.getElementById('pGain').textContent=pg*10;
-    document.getElementById('prestige').disabled=pg<1;
-    document.getElementById('shopName').textContent=SHOPS[S.shop].name;
-    document.getElementById('titleShop').textContent=SHOPS[S.shop].name;
+    document.getElementById('ppc').textContent=fmt(clickValue());
+    document.getElementById('persec').textContent=fmt(mps());
+    document.getElementById('rep').textContent=S.prestige>0?('Reputation '+S.prestige+'  ·  ×'+pMult().toFixed(1)+' output'):'';
     var iron=S.shop===1;
-    document.body.classList[iron?'add':'remove']('iron');
-    document.getElementById('stage').classList[iron?'add':'remove']('iron');
-    document.getElementById('glow').classList[iron?'add':'remove']('iron');
-    var hotEl=document.getElementById('hot'),hotCoreEl=document.getElementById('hotCore');
-    if(hotEl)hotEl.setAttribute('fill',iron?'url(#hotGi)':'url(#hotG)');
-    var sw=document.getElementById('switchShop');
-    if(shopUnlocked()){sw.style.display='';sw.textContent='Go to '+SHOPS[1-S.shop].name;}
-    else sw.style.display='none';
-  }
-
-  document.getElementById('prestige').addEventListener('click',function(){var pg=pendingP();if(pg<1)return;
-    S.prestige+=pg;W().metal=0;
-    beep(540,.2);toast('Reforged! +'+(pg*10)+'% permanent output');render();save();});
-  document.getElementById('switchShop').addEventListener('click',function(){    if(!shopUnlocked())return;S.shop=1-S.shop;beep(380,.12);buildShop();render();save();
-    toast('Entered '+SHOPS[S.shop].name);});
-  document.getElementById('sound').addEventListener('click',function(){soundOn=!soundOn;
-    this.innerHTML=soundOn?'<i class="ti ti-volume"></i>':'<i class="ti ti-volume-off"></i>';});
-
-  // Settings modal
-  function openModal(id){document.getElementById(id).classList.add('show');}
-  function closeModal(id){document.getElementById(id).classList.remove('show');}
-  document.getElementById('openSettings').addEventListener('click',function(){
-    document.getElementById('volRange').value=Math.round(vol*100);
-    document.getElementById('nameInput').value=S.name||'';
-    document.getElementById('pwInput').value=S.pw||'';
-    renderSkins();
-    openModal('settingsModal');});
-  document.getElementById('closeSettings').addEventListener('click',function(){closeModal('settingsModal');});
-  document.getElementById('nameInput').addEventListener('input',function(){S.name=this.value.trim();playerName=S.name;save();});
-  document.getElementById('pwInput').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4);S.pw=this.value;playerPw=S.pw;save();});
-  document.getElementById('volRange').addEventListener('input',function(){vol=this.value/100;soundOn=vol>0;});
-  document.getElementById('exportBtn').addEventListener('click',function(){
-    try{document.getElementById('saveBox').value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));toast('Save exported below');}catch(e){toast('Export failed');}});
-  document.getElementById('importBtn').addEventListener('click',function(){
-    var v=document.getElementById('saveBox').value.trim();if(!v){toast('Paste a save code first');return;}
-    try{var d=JSON.parse(decodeURIComponent(escape(atob(v))));if(!d.shops)throw 0;
-      for(var k in d)S[k]=d[k];save();buildShop();render();renderAchv();applySkin();closeModal('settingsModal');toast('Save imported!');}
-    catch(e){toast('Invalid save code');}});
-  document.getElementById('resetBtn').addEventListener('click',function(){
-    if(!confirm('Reset ALL progress? This cannot be undone.'))return;
-    S={prestige:0,shop:0,shops:[{metal:0,ppcLvl:0,owned:[0,0,0,0,0],drill:false},{metal:0,ppcLvl:0,owned:[0,0,0,0,0],drill:false}],achv:{},totalMetal:0,skin:"iron",lastSeen:Date.now()};
-    save();buildShop();render();renderAchv();applySkin();buildSkins();closeModal('settingsModal');toast('Progress reset');});
-
-  // Leaderboard
-  function bestScore(){return Math.max(S.shops[0].metal,S.shops[1].metal,S.totalMetal||0);}
-  async function loadBoard(){
-    var list=document.getElementById('boardList');
-    if(!window.storage){list.innerHTML='<div class="note">Leaderboard needs storage, unavailable in this view.</div>';return;}
-    try{var r=await window.storage.get(LB_KEY,true);var arr=(r&&r.value)?JSON.parse(r.value):[];
-      arr.sort(function(a,b){return b.metal-a.metal;});arr=arr.slice(0,15);
-      if(!arr.length){list.innerHTML='<div class="note">No scores yet. Be the first to post!</div>';return;}
-      list.innerHTML='';arr.forEach(function(e,i){var row=document.createElement('div');
-        row.className='lbrow'+(e.name===playerName?' me':'');
-        row.innerHTML='<span class="rank">#'+(i+1)+'</span><span class="who">'+escapeHtml(e.name)+'</span><span class="sc">'+fmt(e.metal)+' metal · Rep '+(e.rep||0)+'</span>';
-        list.appendChild(row);});
-    }catch(e){list.innerHTML='<div class="note">Could not load leaderboard.</div>';}
-  }
-  function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  async function postScore(){
-    if(!window.storage){toast('Leaderboard unavailable here');return;}
-    var nm=(S.name||'').trim(),pw=(S.pw||'').trim();
-    if(!nm){toast('Set your name in Settings first');return;}
-    if(pw.length!==4){toast('Set a 4-digit password in Settings first');return;}
-    playerName=nm;playerPw=pw;
-    try{var r=await window.storage.get(LB_KEY,true);var arr=(r&&r.value)?JSON.parse(r.value):[];
-      var idx=arr.findIndex(function(e){return e.name===nm;});
-      if(idx>=0&&arr[idx].pw&&arr[idx].pw!==pw){toast('That name is claimed. Wrong password.');return;}
-      var mine={name:nm,pw:pw,metal:Math.round(bestScore()),rep:S.prestige||0,t:Date.now()};
-      if(idx>=0){if(mine.metal>=arr[idx].metal)arr[idx]=mine;else{arr[idx].pw=pw;}}else arr.push(mine);
-      arr.sort(function(a,b){return b.metal-a.metal;});arr=arr.slice(0,50);
-      await window.storage.set(LB_KEY,JSON.stringify(arr),true);
-      toast('Score posted!');loadBoard();}
-    catch(e){toast('Could not post score');}
-  }
-  document.getElementById('openShop').addEventListener('click',function(){renderSkins();openModal('shopModal');});
-  document.getElementById('closeShop').addEventListener('click',function(){closeModal('shopModal');});
-  document.getElementById('postBtn').addEventListener('click',postScore);
-  [document.getElementById('settingsModal'),document.getElementById('shopModal')].forEach(function(m){
-    m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('show');});});
-
-  async function save(){S.lastSeen=Date.now();
-    try{await window.storage.set(KEY,JSON.stringify(S),false);}catch(e){}}
-  async function load(){
-    try{var r=await window.storage.get(KEY);if(r&&r.value){var d=JSON.parse(r.value);
-      if(d.shops){for(var k in d)S[k]=d[k];}
-      else{S.prestige=d.prestige||0;S.shop=0;
-        S.shops[0]={metal:d.metal||0,ppcLvl:d.ppcLvl||0,owned:(d.owned&&d.owned.length===5)?d.owned:[0,0,0,0,0],drill:!!d.drill};}
-      if(typeof S.shop!=='number')S.shop=0;
-      for(var s=0;s<2;s++){var sh=S.shops[s];if(!sh){S.shops[s]={metal:0,ppcLvl:0,owned:[0,0,0,0,0],drill:false};}
-        else{if(!sh.owned||sh.owned.length!==5)sh.owned=[0,0,0,0,0];if(typeof sh.metal!=='number')sh.metal=0;if(typeof sh.ppcLvl!=='number')sh.ppcLvl=0;}}
-      if(!shopUnlocked())S.shop=0;
-      if(!S.achv)S.achv={};if(typeof S.totalMetal!=='number')S.totalMetal=0;
-      playerName=S.name||'';playerPw=S.pw||'';
-    }}catch(e){}
-    var st=document.getElementById('savetag');if(st)st.textContent=window.storage?'Progress saves automatically':'Saving unavailable in this view';
-  }
-
-  setInterval(function(){render();checkAchv();},250);
-  setInterval(function(){
-    // combo decays if you stop clicking
-    if(combo>0&&Date.now()-lastTap>1100)combo=Math.max(0,combo-1);
+    var hf=document.getElementById('heatFill');hf.style.width=heat+'%';hf.classList.toggle('iron',iron);
+    document.getElementById('heatLbl').textContent=heat<5?'cold':heat<40?'warm':heat<80?'hot':'searing  (+'+Math.round((heatBonus()-1)*100)+'%)';
+    document.getElementById('glow').style.opacity=(0.45+heat/100*0.4).toFixed(2);
     var cw=document.getElementById('comboWrap');
     if(combo>=2){cw.style.display='';
       document.getElementById('comboMult').textContent=comboMult().toFixed(1);
       document.getElementById('comboCount').textContent=combo+' hits';
       document.getElementById('comboFill').style.width=Math.min(100,combo*2)+'%';}
     else cw.style.display='none';
-  },150);
-  setInterval(function(){if(W().drill)gain(ppcVal());},10);
-  setInterval(save,5000);
-  setInterval(function(){loadBoard();},20000);
+    var pg=pendingP();
+    document.getElementById('pGain').textContent=pg*10;
+    document.getElementById('prestige').disabled=pg<1;
+  }
+  function renderFrenzy(){var f=document.getElementById('frenzy');var h='';
+    if(prodFrenzyOn())h+='<div class="frenzyTag"><i class="ti ti-flame"></i> Forge Frenzy ×'+PROD_FRENZY+'</div>';
+    if(clickFrenzyOn())h+='<div class="frenzyTag click"><i class="ti ti-bolt"></i> Click Frenzy ×'+CLICK_FRENZY+'</div>';
+    f.innerHTML=h;}
+  function renderTheme(){var iron=S.shop===1;
+    document.body.classList.toggle('iron',iron);
+    document.getElementById('stage').classList.toggle('iron',iron);
+    document.getElementById('glow').classList.toggle('iron',iron);
+    var hotEl=document.getElementById('hot');if(hotEl)hotEl.setAttribute('fill',iron?'url(#hotGi)':'url(#hotG)');
+    document.getElementById('titleShop').textContent=SHOPS[S.shop].name;}
 
-  buildAchv();
-  buildSkins();
-  buildShop();
-  render();renderAchv();applySkin();loadBoard();
-  (window.storage?load():Promise.resolve()).then(function(){buildShop();render();renderAchv();checkAchv();buildSkins();applySkin();loadBoard();}).catch(function(){buildShop();render();renderAchv();applySkin();});
+  /* ---------- prestige / switch ---------- */
+  document.getElementById('prestige').addEventListener('click',function(){var pg=pendingP();if(pg<1)return;
+    S.prestige+=pg;S.repAvail+=pg;S.stats.reforges++;
+    var hs=headStartMetal();
+    for(var s=0;s<2;s++){S.shops[s].metal=hs;}
+    S.runMetal=0;combo=0;heat=0;
+    beep(540,.2);toast('Reforged! +'+(pg*10)+'% permanent output, +'+pg+' reputation');
+    renderShop();renderPups();renderTheme();renderAchv();save();});
+  document.getElementById('switchShop').addEventListener('click',function(){if(!shopUnlocked())return;
+    S.shop=1-S.shop;combo=0;heat=0;beep(380,.12);buildShop();renderShop();renderTheme();applySkin();save();
+    toast('Entered '+SHOPS[S.shop].name);});
+  document.getElementById('sound').addEventListener('click',function(){soundOn=!soundOn;S.sound=soundOn;
+    this.innerHTML=soundOn?'<i class="ti ti-volume"></i>':'<i class="ti ti-volume-off"></i>';save();});
+
+  /* ---------- modals & tabs ---------- */
+  function openModal(id){document.getElementById(id).classList.add('show');}
+  function closeModal(id){document.getElementById(id).classList.remove('show');}
+  function showTab(which){
+    ['Upgrades','Reforge','Skins'].forEach(function(n){
+      document.getElementById('pane'+n).style.display=(n===which)?'':'none';
+      document.getElementById('tab'+n).classList.toggle('on',n===which);});
+    if(which==='Reforge')renderPups();if(which==='Skins')renderSkins();}
+  document.getElementById('tabUpgrades').addEventListener('click',function(){showTab('Upgrades');});
+  document.getElementById('tabReforge').addEventListener('click',function(){showTab('Reforge');});
+  document.getElementById('tabSkins').addEventListener('click',function(){showTab('Skins');});
+  document.getElementById('openShop').addEventListener('click',function(){renderShop();renderSkins();renderPups();openModal('shopModal');});
+  document.getElementById('closeShop').addEventListener('click',function(){closeModal('shopModal');});
+
+  document.getElementById('openSettings').addEventListener('click',function(){
+    document.getElementById('volRange').value=Math.round(vol*100);
+    document.getElementById('nameInput').value=S.name||'';
+    document.getElementById('pwInput').value=S.pw||'';
+    document.getElementById('motionChk').checked=!!S.reducedMotion;
+    renderStats();openModal('settingsModal');});
+  document.getElementById('closeSettings').addEventListener('click',function(){closeModal('settingsModal');});
+  document.getElementById('nameInput').addEventListener('input',function(){S.name=this.value.trim();playerName=S.name;save();});
+  document.getElementById('pwInput').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4);S.pw=this.value;playerPw=S.pw;save();});
+  document.getElementById('volRange').addEventListener('input',function(){vol=this.value/100;S.vol=vol;soundOn=vol>0;S.sound=soundOn;
+    document.getElementById('sound').innerHTML=soundOn?'<i class="ti ti-volume"></i>':'<i class="ti ti-volume-off"></i>';});
+  document.getElementById('motionChk').addEventListener('change',function(){S.reducedMotion=this.checked;save();});
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    try{document.getElementById('saveBox').value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));toast('Save exported below');}catch(e){toast('Export failed');}});
+  document.getElementById('importBtn').addEventListener('click',function(){
+    var v=document.getElementById('saveBox').value.trim();if(!v){toast('Paste a save code first');return;}
+    try{var d=JSON.parse(decodeURIComponent(escape(atob(v))));applyLoaded(d);save();
+      buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();renderTheme();closeModal('settingsModal');toast('Save imported!');}
+    catch(e){toast('Invalid save code');}});
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset ALL progress? This cannot be undone.'))return;
+    S=freshState();playerName='';playerPw='';soundOn=true;vol=0.7;combo=0;heat=0;prodFrenzyUntil=0;clickFrenzyUntil=0;
+    save();buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();renderTheme();closeModal('settingsModal');toast('Progress reset');});
+
+  function renderStats(){var box=document.getElementById('statBox');var st=S.stats;
+    var rows=[['Total metal forged',fmt(S.totalMetal)],['Anvil strikes',(st.clicks||0).toLocaleString()],
+      ['Critical strikes',(st.criticals||0).toLocaleString()],['Golden ingots',(st.ingots||0).toLocaleString()],
+      ['Reforges',(st.reforges||0).toLocaleString()],['Reputation',S.prestige+' (×'+pMult().toFixed(1)+')']];
+    box.innerHTML=rows.map(function(r){return '<div class="statline"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>';}).join('');}
+
+  [document.getElementById('settingsModal'),document.getElementById('shopModal')].forEach(function(m){
+    m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('show');});});
+
+  /* ---------- leaderboard (shared via window.storage, else local) ---------- */
+  function bestScore(){return Math.max(S.shops[0].metal,S.shops[1].metal,S.totalMetal||0);}
+  function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function localBoard(){try{return JSON.parse(localStorage.getItem(LOCAL_LB))||[];}catch(e){return [];}}
+  function setLocalBoard(a){try{localStorage.setItem(LOCAL_LB,JSON.stringify(a));}catch(e){}}
+
+  function paintBoard(arr,shared){var list=document.getElementById('boardList');
+    document.getElementById('boardTitle').textContent=shared?'Leaderboard':'Local Records';
+    document.getElementById('boardNote').textContent=shared
+      ? 'Shared with everyone who plays. Set your name + password in Settings, then post your best!'
+      : 'Saved on this device. Set a name in Settings and post your best to record it here.';
+    arr=arr.slice().sort(function(a,b){return b.metal-a.metal;}).slice(0,15);
+    if(!arr.length){list.innerHTML='<div class="note">No scores yet. Be the first to post!</div>';return;}
+    list.innerHTML='';arr.forEach(function(e,i){var row=document.createElement('div');
+      row.className='lbrow'+(e.name===playerName?' me':'');
+      row.innerHTML='<span class="rank">#'+(i+1)+'</span><span class="who">'+escapeHtml(e.name||'Anonymous')+'</span><span class="sc">'+fmt(e.metal)+' · Rep '+(e.rep||0)+'</span>';
+      list.appendChild(row);});}
+  async function loadBoard(){
+    if(window.storage){try{var r=await window.storage.get(LB_KEY,true);var arr=(r&&r.value)?JSON.parse(r.value):[];paintBoard(arr,true);return;}catch(e){}}
+    paintBoard(localBoard(),false);
+  }
+  async function postScore(){
+    var nm=(S.name||'').trim();
+    if(!nm){toast('Set your name in Settings first');return;}
+    var mine={name:nm,metal:Math.round(bestScore()),rep:S.prestige||0,t:Date.now()};
+    if(window.storage){
+      var pw=(S.pw||'').trim();if(pw.length!==4){toast('Set a 4-digit password in Settings first');return;}
+      playerName=nm;playerPw=pw;
+      try{var r=await window.storage.get(LB_KEY,true);var arr=(r&&r.value)?JSON.parse(r.value):[];
+        var idx=arr.findIndex(function(e){return e.name===nm;});
+        if(idx>=0&&arr[idx].pw&&arr[idx].pw!==pw){toast('That name is claimed. Wrong password.');return;}
+        mine.pw=pw;
+        if(idx>=0){if(mine.metal>=arr[idx].metal)arr[idx]=mine;else arr[idx].pw=pw;}else arr.push(mine);
+        arr.sort(function(a,b){return b.metal-a.metal;});arr=arr.slice(0,50);
+        await window.storage.set(LB_KEY,JSON.stringify(arr),true);
+        toast('Score posted!');loadBoard();}
+      catch(e){toast('Could not post score');}
+    }else{
+      playerName=nm;var arr=localBoard();var idx=arr.findIndex(function(e){return e.name===nm;});
+      if(idx>=0){if(mine.metal>=arr[idx].metal)arr[idx]=mine;}else arr.push(mine);
+      arr.sort(function(a,b){return b.metal-a.metal;});arr=arr.slice(0,50);setLocalBoard(arr);
+      toast('Recorded locally!');loadBoard();}
+  }
+  document.getElementById('postBtn').addEventListener('click',postScore);
+
+  /* ---------- save / load (localStorage + optional window.storage) ---------- */
+  async function rawGet(key){
+    if(window.storage){try{var r=await window.storage.get(key);if(r&&r.value)return r.value;}catch(e){}}
+    try{return localStorage.getItem(key);}catch(e){return null;}
+  }
+  function rawSet(key,val){
+    if(window.storage){try{window.storage.set(key,val,false);}catch(e){}}
+    try{localStorage.setItem(key,val);}catch(e){}
+  }
+  function save(){S.lastSeen=Date.now();S.vol=vol;S.sound=soundOn;rawSet(KEY,JSON.stringify(S));}
+
+  function applyLoaded(d){
+    if(!d)return;
+    if(d.v>=2&&d.shops){ // current format: merge over fresh so new fields exist
+      var f=freshState();for(var k in f)if(!(k in d))d[k]=f[k];
+      d.stats=Object.assign({clicks:0,criticals:0,ingots:0,reforges:0,maxedHeat:false},d.stats||{});
+      d.pUp=d.pUp||{};
+      for(var s=0;s<2;s++){var sh=d.shops[s]||newShop();if(!sh.owned||sh.owned.length!==NTIER){var o=sh.owned||[];var no=[0,0,0,0,0,0,0];for(var i=0;i<o.length&&i<NTIER;i++)no[i]=o[i]||0;sh.owned=no;}
+        if(typeof sh.metal!=='number')sh.metal=0;if(typeof sh.hammer!=='number')sh.hammer=sh.ppcLvl||0;if(typeof sh.drill!=='boolean')sh.drill=!!sh.drill;d.shops[s]=sh;}
+      S=d;
+    }else{ // legacy migration (v1 or pre-shop)
+      var n=freshState();
+      n.prestige=d.prestige||0;n.repAvail=d.prestige||0;
+      n.totalMetal=d.totalMetal||0;n.skin=d.skin||"iron";n.achv=d.achv||{};
+      n.name=d.name||"";n.pw=d.pw||"";
+      if(d.shops){for(var s2=0;s2<2;s2++){var os=d.shops[s2]||{};var no2=[0,0,0,0,0,0,0];var oo=os.owned||[];
+          for(var j=0;j<oo.length&&j<NTIER;j++)no2[j]=oo[j]||0;
+          n.shops[s2]={metal:os.metal||0,hammer:os.ppcLvl||0,owned:no2,drill:!!os.drill};}}
+      else{var no3=[0,0,0,0,0,0,0];var oo3=d.owned||[];for(var j2=0;j2<oo3.length&&j2<NTIER;j2++)no3[j2]=oo3[j2]||0;
+        n.shops[0]={metal:d.metal||0,hammer:d.ppcLvl||0,owned:no3,drill:!!d.drill};}
+      S=n;
+    }
+    if(typeof S.shop!=='number'||(S.shop===1&&!shopUnlocked()))S.shop=0;
+    if(typeof S.vol==='number')vol=S.vol;if(typeof S.sound==='boolean')soundOn=S.sound;
+    playerName=S.name||'';playerPw=S.pw||'';
+  }
+  async function load(){
+    var val=await rawGet(KEY);
+    if(val){try{applyLoaded(JSON.parse(val));}catch(e){}}
+    document.getElementById('sound').innerHTML=soundOn?'<i class="ti ti-volume"></i>':'<i class="ti ti-volume-off"></i>';
+    var st=document.getElementById('savetag');if(st)st.textContent='Progress saves automatically on this device';
+  }
+
+  /* ---------- offline earnings ---------- */
+  function applyOffline(){
+    var dt=(Date.now()-(S.lastSeen||Date.now()))/1000;
+    if(dt<60)return;
+    var rate=mps();if(rate<=0)return;
+    var capped=Math.min(dt,8*3600);
+    var earn=rate*capped*offlineEff();
+    if(earn<1)return;
+    gain(earn);
+    document.getElementById('offlineBody').innerHTML=
+      'You were away for <b style="color:var(--gold)">'+fmtTime(dt)+'</b>.<br>Your forges produced <b style="color:var(--gold)">'+fmt(earn)+' metal</b> '+
+      '<span style="opacity:.7">(at '+Math.round(offlineEff()*100)+'% offline rate)</span>.';
+    openModal('offlineModal');chime();
+  }
+  document.getElementById('offlineClose').addEventListener('click',function(){closeModal('offlineModal');});
+
+  /* ---------- loops ---------- */
+  var lastFrame=(window.performance&&performance.now)?performance.now():Date.now();
+  function nowMs(){return (window.performance&&performance.now)?performance.now():Date.now();}
+  function frame(){
+    var t=nowMs();var dt=(t-lastFrame)/1000;if(dt>0.5)dt=0.5;if(dt<0)dt=0;lastFrame=t;
+    // passive production
+    var rate=mps();if(rate>0)gain(rate*dt);
+    // auto-striker
+    var ar=autoRate();
+    if(ar>0){autoAcc+=ar*dt;var guard=0;while(autoAcc>=1&&guard<200){autoAcc--;guard++;tap(true);}}
+    // heat + combo decay
+    if(heat>0)heat=Math.max(0,heat-HEAT_DECAY*dt);
+    if(combo>0&&Date.now()-lastTap>1100)combo=Math.max(0,combo-2);
+    renderLive();renderFrenzy();
+    requestAnimationFrame(frame);
+  }
+
+  // throttled heavier renders
+  setInterval(function(){renderShop();checkAchv();renderSkins();},500);
+  setInterval(save,10000);
+  setInterval(loadBoard,20000);
+  document.addEventListener('visibilitychange',function(){if(document.hidden)save();});
+  window.addEventListener('beforeunload',save);
+
+  /* ---------- init ---------- */
+  buildAchv();buildShop();buildSkins();buildPups();
+  (window.storage||window.localStorage?load():Promise.resolve()).then(function(){
+    applyOffline();
+    buildShop();renderShop();renderAchv();checkAchv();buildSkins();buildPups();applySkin();renderTheme();renderStats();
+    loadBoard();scheduleIngot();
+    requestAnimationFrame(frame);
+  }).catch(function(){
+    buildShop();renderShop();renderAchv();applySkin();renderTheme();loadBoard();scheduleIngot();requestAnimationFrame(frame);
+  });
 })();
 </script>
 </body>

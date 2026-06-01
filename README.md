@@ -3,6 +3,26 @@
 A self-contained browser incremental/clicker game. Single static HTML file,
 no build step, no dependencies, no server required.
 
+## Features
+
+- **Forge metal** by striking the anvil (mouse, tap, or Spacebar).
+- **Passive income** — every building you buy produces metal/sec, even idle.
+- **Offline earnings** — your forges keep working while the tab is closed; come
+  back to a "Welcome back" payout (scaled by the Night Shift perk).
+- **Forge Heat** — keep striking to heat the anvil for up to +60% click power.
+- **Combos** — rapid clicks ramp a multiplier up to ×3.
+- **Critical strikes** — random ×7 hits (raise the odds with Lucky Strikes).
+- **Golden ingots** — appear at random; click for an instant payout, a ×7
+  **Forge Frenzy**, or a ×77 **Click Frenzy**.
+- **Power Drill** auto-striker that clicks for you.
+- **Reforge** for permanent output bonuses and **reputation**, spent in a
+  **Reforge Tree** of 8 permanent perks.
+- **Two blacksmiths** (Metal & Iron), 7 building tiers each.
+- **17 achievements**, **9 anvil skins**, sound effects, reduced-motion option,
+  and export/import save codes.
+- **Saves automatically** to the browser (localStorage) and a local high-score
+  board — works fully offline on GitHub Pages.
+
 ## What's here
 
 - `index.html` — the entire game (HTML + CSS + JS in one file). This is the
@@ -38,13 +58,20 @@ gh repo create metal-clicker --public --source=. --push
 ## Notes for anyone modifying the game
 
 - Everything lives in `index.html`. The `<script>` is one IIFE; game state is
-  the `S` object, persisted via the artifact storage API when available and
-  via Export/Import save codes (Settings) otherwise.
-- The **shared leaderboard** relies on a `window.storage` shared-storage API
-  that only exists when the game runs inside Claude. On GitHub Pages or a
-  local file, that API is absent, so the leaderboard simply shows an
-  "unavailable" message and the rest of the game works normally
-  (clicking, upgrades, anvil skins, achievements, single-player saves).
+  the `S` object (save format `v:2`), persisted to **localStorage** and, when
+  running inside Claude, also to the `window.storage` API. Old saves from the
+  original version migrate automatically. Export/Import save codes are in
+  Settings.
+- Tuning constants live at the top of the script: `SHOPS` (buildings/costs),
+  `PUPS` (reforge-tree perks), `ACHV` (achievements), `SKINS`, and the balance
+  constants (`CRIT_MULT`, `HEAT_*`, `FRENZY_*`, etc.).
+- The game loop is a single `requestAnimationFrame` tick handling production,
+  the auto-striker, heat/combo decay, and live number display; heavier DOM
+  updates (shop buttons, achievements) run on a 500ms interval.
+- The **leaderboard** uses the `window.storage` shared API when the game runs
+  inside Claude (a true shared board). On GitHub Pages or a local file that API
+  is absent, so it falls back to a per-device **local high-score board** stored
+  in localStorage — the panel stays useful everywhere.
 - No external network calls, no third-party scripts except the Tabler Icons
   stylesheet loaded from a CDN for the UI icons.
 
