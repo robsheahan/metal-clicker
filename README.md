@@ -15,10 +15,17 @@ no build step, no dependencies, no server required.
 - **Golden ingots** — appear at random; click for an instant payout, a ×7
   **Forge Frenzy**, or a ×77 **Click Frenzy**.
 - **Power Drill** auto-striker that clicks for you.
+- **Overdrive** — an active ability (button by the anvil) for a ×5 output surge
+  on a cooldown.
+- **Building milestones** — each building doubles its output at 10/25/50/100/
+  150/200/250 owned.
+- **Bulk buying** — ×1 / ×10 / Buy Max toggle in the shop.
+- **Blueprints** — 19 one-time strategic upgrades (click/output multipliers,
+  crits, heat, ingot luck, synergies) that unlock as you progress.
 - **Reforge** for permanent output bonuses and **reputation**, spent in a
   **Reforge Tree** of 8 permanent perks.
 - **Two blacksmiths** (Metal & Iron), 7 building tiers each.
-- **17 achievements**, **9 anvil skins**, sound effects, reduced-motion option,
+- **21 achievements**, **9 anvil skins**, sound effects, reduced-motion option,
   and export/import save codes.
 - **Saves automatically** to the browser (localStorage) and a local high-score
   board — works fully offline on GitHub Pages.

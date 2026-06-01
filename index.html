@@ -168,6 +168,26 @@
   .tab{flex:1;border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,#241c18,#15100e);
     color:var(--muted);padding:8px;font-size:13px;cursor:pointer;}
   .tab.on{color:var(--gold);border-color:var(--gold2);}
+
+  .buymode{display:flex;gap:6px;margin-bottom:10px;}
+  .buymode button{flex:1;border:1px solid var(--line);border-radius:8px;background:linear-gradient(160deg,#241c18,#15100e);
+    color:var(--muted);padding:6px;font-size:12px;cursor:pointer;font-weight:600;}
+  .buymode button.on{color:#3a2400;background:linear-gradient(160deg,#ffd874,#e0850e);border-color:var(--gold2);}
+  .bpGrid{display:flex;flex-direction:column;gap:8px;}
+  .bpItem{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;background:linear-gradient(160deg,#2a221c,#161210);}
+  .bpItem.owned{border-color:var(--gold2);background:linear-gradient(160deg,#33291a,#1a130c);}
+  .bpItem .nm{font-size:13px;font-weight:500;color:#fff;}
+  .bpItem .ds{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35;}
+  .bpBuy{border:1px solid var(--gold2);border-radius:8px;cursor:pointer;color:var(--gold);white-space:nowrap;
+    background:linear-gradient(160deg,#3a2c1a,#211710);padding:7px 10px;font-size:12px;font-weight:600;}
+  .bpBuy:disabled{opacity:.4;cursor:default;color:var(--muted);border-color:var(--line);}
+  .bpBuy.have{color:var(--gold);border-color:var(--gold2);opacity:1;}
+
+  #overdrive{transition:filter .1s,border-color .1s;}
+  #overdrive.ready{color:var(--gold);border-color:var(--gold2);background:linear-gradient(160deg,#3a2c1a,#211710);font-weight:700;animation:pulse 1.4s ease-in-out infinite;}
+  #overdrive.active{color:#3a2400;background:linear-gradient(160deg,#ffd874,#ff8a1f);border-color:var(--gold2);font-weight:700;}
+  #overdrive:disabled{opacity:.55;cursor:default;animation:none;}
 </style>
 </head>
 <body>
@@ -222,8 +242,9 @@
       <div class="heatwrap">
         <div class="controls">
           <button class="icbtn" id="sound" aria-label="Toggle sound"><i class="ti ti-volume"></i></button>
-          <span class="hint">Strike the anvil (or press Space) to forge.</span>
+          <button class="icbtn" id="overdrive" aria-label="Activate Overdrive"><i class="ti ti-bolt"></i> Overdrive</button>
         </div>
+        <div class="hint" style="text-align:center;margin-top:8px;">Strike the anvil (or press Space) to forge.</div>
 
         <div class="heatlabels"><span>Forge Heat</span><span id="heatLbl">cold</span></div>
         <div class="heattrack"><div class="heatfill" id="heatFill"></div></div>
@@ -266,14 +287,26 @@
     <div class="modalHead"><span>Upgrades &amp; Skins</span><button class="icbtn" id="closeShop" aria-label="Close"><i class="ti ti-x"></i></button></div>
     <div class="tabbar">
       <button class="tab on" id="tabUpgrades">Upgrades</button>
-      <button class="tab" id="tabReforge">Reforge Tree</button>
+      <button class="tab" id="tabBlueprints">Blueprints</button>
+      <button class="tab" id="tabReforge">Reforge</button>
       <button class="tab" id="tabSkins">Skins</button>
     </div>
 
     <div id="paneUpgrades">
       <div class="sectitle">Upgrades · <span id="shopName" style="color:var(--gold);">Metal Blacksmith</span></div>
+      <div class="buymode" id="buyMode">
+        <button data-buy="1" class="on">Buy ×1</button>
+        <button data-buy="10">Buy ×10</button>
+        <button data-buy="max">Buy Max</button>
+      </div>
       <div id="shop"></div>
       <button class="reset" id="switchShop" style="display:none;margin-top:8px;">Go to other blacksmith</button>
+    </div>
+
+    <div id="paneBlueprints" style="display:none;">
+      <div class="sectitle">Blueprints · <span id="bpCount" style="color:var(--gold);">0</span> built</div>
+      <p class="note">One-time permanent upgrades bought with metal. More designs unlock as you progress.</p>
+      <div id="bpGrid" class="bpGrid"></div>
     </div>
 
     <div id="paneReforge" style="display:none;">
@@ -343,6 +376,30 @@
   ];
   var NTIER=7, DRILL_COST=50000, CRIT_MULT=7, HEAT_ADD=7, HEAT_DECAY=10;
   var FRENZY_MS=13000, PROD_FRENZY=7, CLICK_FRENZY=77;
+  var MILESTONES=[10,25,50,100,150,200,250];   // each doubles a building's output
+  var OD={dur:15000,cd:120000,mult:5};          // Overdrive: ×5 for 15s, 2min cooldown
+
+  var BLUEPRINTS=[
+    {id:"c1",nm:"Balanced Hammer",ds:"×2 click power",kind:"click",val:2,cost:2000,req:function(){return S.totalMetal>=1500;}},
+    {id:"m1",nm:"Oiled Gears",ds:"×2 metal/sec",kind:"mps",val:2,cost:6000,req:function(){return mpsRaw()>=8;}},
+    {id:"t0",nm:"Master Apprentices",ds:"1st building produces ×3",kind:"tier",idx:0,val:3,cost:2000,req:function(){return tierOwnedAny(0)>=10;}},
+    {id:"cb1",nm:"Rhythm Master",ds:"Combo builds twice as fast",kind:"combo",val:2,cost:9000,req:function(){return true;}},
+    {id:"t1",nm:"Bigger Bellows",ds:"2nd building produces ×3",kind:"tier",idx:1,val:3,cost:18000,req:function(){return tierOwnedAny(1)>=10;}},
+    {id:"cr1",nm:"Keen Edge",ds:"+4% critical chance",kind:"crit",val:0.04,cost:35000,req:function(){return S.stats.criticals>=25;}},
+    {id:"c2",nm:"Weighted Head",ds:"×2 click power",kind:"click",val:2,cost:60000,req:function(){return W().hammer>=10;}},
+    {id:"cb2",nm:"Master of Tempo",ds:"Combo cap ×1.6 (up to ×4.2)",kind:"combocap",val:1.6,cost:90000,req:function(){return true;}},
+    {id:"h1",nm:"Insulated Forge",ds:"Forge Heat bonus up to +120%",kind:"heat",val:0.6,cost:120000,req:function(){return S.stats.maxedHeat;}},
+    {id:"t2",nm:"Hotter Forges",ds:"3rd building produces ×3",kind:"tier",idx:2,val:3,cost:160000,req:function(){return tierOwnedAny(2)>=10;}},
+    {id:"g1",nm:"Lucky Charm",ds:"Golden ingots appear 30% more often",kind:"ingot",val:0.7,cost:200000,req:function(){return S.stats.ingots>=5;}},
+    {id:"m2",nm:"Conveyor Belts",ds:"×2 metal/sec",kind:"mps",val:2,cost:300000,req:function(){return mpsRaw()>=120;}},
+    {id:"h2",nm:"Ember Retention",ds:"Forge Heat fades 40% slower",kind:"heatdecay",val:0.6,cost:450000,req:function(){return S.stats.maxedHeat;}},
+    {id:"sy1",nm:"Smith's Synergy",ds:"Each Hammer level adds +2% metal/sec",kind:"synergy",val:0.02,cost:600000,req:function(){return W().hammer>=15;}},
+    {id:"cr2",nm:"Devastation",ds:"Critical strikes hit ×10 (was ×7)",kind:"critmult",val:3,cost:800000,req:function(){return S.stats.criticals>=200;}},
+    {id:"g2",nm:"Sustained Frenzy",ds:"Frenzies & Overdrive last 8s longer",kind:"frenzy",val:8000,cost:1200000,req:function(){return S.stats.ingots>=15;}},
+    {id:"t3",nm:"Reinforced Foundries",ds:"4th building produces ×3",kind:"tier",idx:3,val:3,cost:2000000,req:function(){return tierOwnedAny(3)>=10;}},
+    {id:"c3",nm:"Titanium Hammer",ds:"×3 click power",kind:"click",val:3,cost:3000000,req:function(){return W().hammer>=25;}},
+    {id:"m3",nm:"Automation Core",ds:"×3 metal/sec",kind:"mps",val:3,cost:1.2e7,req:function(){return mpsRaw()>=2000;}}
+  ];
 
   var PUPS=[
     {id:"sharp", nm:"Sharpened Hammers", ds:"+25% click power per level", max:25, cost:function(l){return l+1;}},
@@ -364,15 +421,19 @@
     {id:"clk10k",nm:"Iron Wrist",    desc:"Strike the anvil 10,000 times", bonus:0.05, test:function(){return S.stats.clicks>=10000;}},
     {id:"own25", nm:"Stockpile",     desc:"Own 25 of any one upgrade", bonus:0.03, test:function(){return maxOwned()>=25;}},
     {id:"own100",nm:"Industrialist", desc:"Own 100 of any one upgrade", bonus:0.05, test:function(){return maxOwned()>=100;}},
-    {id:"mps1k", nm:"Assembly Line", desc:"Reach 1,000 metal/sec", bonus:0.04, test:function(){return mpsRaw()*pMult()*achvBaseMult()>=1000;}},
-    {id:"mps100k",nm:"Mega Forge",   desc:"Reach 100,000 metal/sec", bonus:0.06, test:function(){return mpsRaw()*pMult()*achvBaseMult()>=1e5;}},
+    {id:"mps1k", nm:"Assembly Line", desc:"Reach 1,000 metal/sec", bonus:0.04, test:function(){return mpsClean()>=1000;}},
+    {id:"mps100k",nm:"Mega Forge",   desc:"Reach 100,000 metal/sec", bonus:0.06, test:function(){return mpsClean()>=1e5;}},
     {id:"crit100",nm:"Sharpshooter", desc:"Land 100 critical strikes", bonus:0.04, test:function(){return S.stats.criticals>=100;}},
     {id:"ingot10",nm:"Treasure Hunter",desc:"Click 10 golden ingots", bonus:0.04, test:function(){return S.stats.ingots>=10;}},
     {id:"hothot",nm:"Red Hot",       desc:"Max out the forge heat", bonus:0.03, test:function(){return S.stats.maxedHeat;}},
     {id:"reforge1",nm:"Reborn",      desc:"Reforge for the first time", bonus:0.05, test:function(){return S.prestige>=1;}},
     {id:"reforge10",nm:"Veteran Smith",desc:"Reach 10 reputation", bonus:0.10, test:function(){return S.prestige>=10;}},
     {id:"reforge50",nm:"Living Legend",desc:"Reach 50 reputation", bonus:0.15, test:function(){return S.prestige>=50;}},
-    {id:"bothshops",nm:"Two Forges", desc:"Unlock the Iron Blacksmith", bonus:0.05, test:function(){return S.prestige>=3;}}
+    {id:"bothshops",nm:"Two Forges", desc:"Unlock the Iron Blacksmith", bonus:0.05, test:function(){return S.prestige>=3;}},
+    {id:"ms150",nm:"Mass Production",desc:"Own 150 of any one building", bonus:0.07, test:function(){return maxOwned()>=150;}},
+    {id:"tech1",nm:"Engineer",      desc:"Build your first blueprint", bonus:0.03, test:function(){return techCount()>=1;}},
+    {id:"tech10",nm:"Chief Designer",desc:"Build 10 blueprints", bonus:0.06, test:function(){return techCount()>=10;}},
+    {id:"od1",  nm:"Overclocked",   desc:"Activate Overdrive", bonus:0.03, test:function(){return (S.stats.overdrives||0)>=1;}}
   ];
 
   var SKINS=[
@@ -392,10 +453,10 @@
   /* ---------- state ---------- */
   function newShop(){return {metal:0,hammer:0,owned:[0,0,0,0,0,0,0],drill:false};}
   function freshState(){
-    return {v:2,shop:0,prestige:0,repAvail:0,pUp:{},
+    return {v:2,shop:0,prestige:0,repAvail:0,pUp:{},tech:{},buyMode:1,odLast:0,
       shops:[newShop(),newShop()],
       totalMetal:0,runMetal:0,achv:{},skin:"iron",
-      stats:{clicks:0,criticals:0,ingots:0,reforges:0,maxedHeat:false},
+      stats:{clicks:0,criticals:0,ingots:0,reforges:0,overdrives:0,maxedHeat:false},
       name:"",pw:"",vol:0.7,sound:true,reducedMotion:false,
       lastSeen:Date.now()};
   }
@@ -408,6 +469,25 @@
   function maxOwned(){var m=0;for(var s=0;s<2;s++){var o=S.shops[s].owned;for(var i=0;i<o.length;i++)if(o[i]>m)m=o[i];}return m;}
   function shopUnlocked(){return S.prestige>=3;}
   function reduced(){return !!S.reducedMotion;}
+
+  // blueprints / tech
+  function hasTech(id){return !!(S.tech&&S.tech[id]);}
+  function techCount(){return S.tech?Object.keys(S.tech).length:0;}
+  function tierOwnedAny(i){return Math.max(S.shops[0].owned[i]||0,S.shops[1].owned[i]||0);}
+  function techProd(kind){var p=1;for(var i=0;i<BLUEPRINTS.length;i++){var b=BLUEPRINTS[i];if(b.kind===kind&&hasTech(b.id))p*=b.val;}return p;}
+  function techSum(kind){var s=0;for(var i=0;i<BLUEPRINTS.length;i++){var b=BLUEPRINTS[i];if(b.kind===kind&&hasTech(b.id))s+=b.val;}return s;}
+  function tierTechMult(i){var p=1;for(var k=0;k<BLUEPRINTS.length;k++){var b=BLUEPRINTS[k];if(b.kind==='tier'&&b.idx===i&&hasTech(b.id))p*=b.val;}return p;}
+  function critMultVal(){return CRIT_MULT+techSum('critmult');}
+  function comboStrength(){return techProd('combo');}
+  function comboCap(){return 50*techProd('combocap');}
+  function synergyFrac(){return techSum('synergy');}
+  // building milestones
+  function milestoneMult(owned){var m=1;for(var i=0;i<MILESTONES.length;i++)if(owned>=MILESTONES[i])m*=2;return m;}
+  function nextMilestone(owned){for(var i=0;i<MILESTONES.length;i++)if(owned<MILESTONES[i])return MILESTONES[i];return null;}
+  // overdrive
+  function odActive(){return Date.now()<(S.odLast||0)+OD.dur+techSum('frenzy');}
+  function odReady(){return Date.now()>=(S.odLast||0)+OD.cd;}
+  function odMult(){return odActive()?OD.mult:1;}
 
   var fmt=function(x){
     if(!isFinite(x))return '∞';
@@ -425,23 +505,27 @@
   function pMult(){return 1+S.prestige*0.1;}
   function achvBaseMult(){var b=1;for(var i=0;i<ACHV.length;i++)if(S.achv[ACHV[i].id])b+=ACHV[i].bonus;return b;}
   function achvMult(){return achvBaseMult();}
-  function comboMult(){return 1+Math.min(combo,50)*0.04;}
-  function heatBonus(){return 1+(heat/100)*0.6;}
-  function critChance(){return Math.min(0.9,0.01+lvl("lucky")*0.02);}
+  function comboMult(){return 1+Math.min(combo,comboCap())*0.04;}
+  function heatBonus(){return 1+(heat/100)*(0.6+techSum('heat'));}
+  function critChance(){return Math.min(0.9,0.01+lvl("lucky")*0.02+techSum('crit'));}
   function prodFrenzyOn(){return Date.now()<prodFrenzyUntil;}
   function clickFrenzyOn(){return Date.now()<clickFrenzyUntil;}
 
-  function mpsRaw(){var w=W(),T=curTiers(),m=0;for(var i=0;i<NTIER;i++)m+=w.owned[i]*T[i].mps;return m;}
+  function mpsRaw(){var w=W(),T=curTiers(),m=0;for(var i=0;i<NTIER;i++)m+=w.owned[i]*T[i].mps*milestoneMult(w.owned[i])*tierTechMult(i);return m;}
+  // metal/sec without the temporary surges (used for momentum + achievement thresholds)
+  function mpsClean(){
+    return mpsRaw()*pMult()*achvMult()*(1+0.25*lvl("effic"))*techProd('mps')*(1+synergyFrac()*W().hammer);
+  }
   function mps(){
-    var m=mpsRaw()*pMult()*achvMult()*(1+0.25*lvl("effic"));
+    var m=mpsClean()*odMult();
     if(prodFrenzyOn())m*=PROD_FRENZY;
     return m;
   }
   // raw per-click before combo/heat/crit/click-frenzy
   function clickPower(){
     var base=1+W().hammer;
-    base+=mpsRaw()*pMult()*achvMult()*(1+0.25*lvl("effic"))*(0.02*lvl("moment"));
-    base*=pMult()*achvMult()*(1+0.25*lvl("sharp"));
+    base+=mpsClean()*(0.02*lvl("moment"));
+    base*=pMult()*achvMult()*(1+0.25*lvl("sharp"))*techProd('click')*odMult();
     return base;
   }
   // displayed/effective per click (manual), includes combo+heat+frenzy
@@ -454,6 +538,16 @@
   function tierCost(i){return Math.round(curTiers()[i].base*Math.pow(1.15,W().owned[i])*SHOPS[S.shop].costMul);}
   function hammerCost(){return Math.round(SHOPS[S.shop].hammerBase*Math.pow(1.6,W().hammer)*SHOPS[S.shop].costMul);}
   function drillCost(){return Math.round(DRILL_COST*SHOPS[S.shop].costMul);}
+  // geometric bulk-buy: cost of `count` items and how many are affordable
+  function geoCost(base,r,owned,count){return Math.round(base*Math.pow(r,owned)*(Math.pow(r,count)-1)/(r-1));}
+  function geoMax(base,r,owned,metal){var c0=base*Math.pow(r,owned);if(metal<c0)return 0;
+    var n=Math.floor(Math.log(metal*(r-1)/c0+1)/Math.log(r));return n>100000?100000:n;}
+  function tierCostN(i,n){return geoCost(curTiers()[i].base*SHOPS[S.shop].costMul,1.15,W().owned[i],n);}
+  function hammerCostN(n){return geoCost(SHOPS[S.shop].hammerBase*SHOPS[S.shop].costMul,1.6,W().hammer,n);}
+  function maxAffordTier(i){return geoMax(curTiers()[i].base*SHOPS[S.shop].costMul,1.15,W().owned[i],W().metal);}
+  function maxAffordHammer(){return geoMax(SHOPS[S.shop].hammerBase*SHOPS[S.shop].costMul,1.6,W().hammer,W().metal);}
+  function buyCountTier(i){return S.buyMode==='max'?maxAffordTier(i):S.buyMode;}
+  function buyCountHammer(){return S.buyMode==='max'?maxAffordHammer():S.buyMode;}
   function pendingP(){return Math.floor(Math.sqrt(S.runMetal/1e5));}
   function offlineEff(){return Math.min(1,0.5+lvl("night")*0.08);}
   function autoRate(){return W().drill?(3+lvl("auto")):0;}
@@ -522,11 +616,11 @@
     if(auto){v=clickPower();if(clickFrenzyOn())v*=CLICK_FRENZY;}
     else{
       var now=Date.now();
-      if(now-lastTap<1100)combo++;else combo=1;lastTap=now;
+      if(now-lastTap<1100)combo+=comboStrength();else combo=1;lastTap=now;
       heat=Math.min(100,heat+HEAT_ADD);if(heat>=100&&!S.stats.maxedHeat)S.stats.maxedHeat=true;
       S.stats.clicks++;v=clickValue();
     }
-    if(Math.random()<critChance()){crit=true;v*=CRIT_MULT;S.stats.criticals++;}
+    if(Math.random()<critChance()){crit=true;v*=critMultVal();S.stats.criticals++;}
     gain(v);
     if(!auto){floatText((crit?'CRIT +':'+')+fmt(v),crit);sparks(crit);clang(crit);if(crit)shake();}
     else if(crit&&!reduced())sparks(false);
@@ -534,15 +628,17 @@
   anvil.addEventListener('click',function(){tap(false);});
   // keyboard: space / enter strike (ignore when typing in inputs)
   document.addEventListener('keydown',function(e){
-    if((e.code==='Space'||e.code==='Enter')&&document.activeElement&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))return;
-    if(e.code==='Space'){e.preventDefault();tap(false);anvil.classList.add('kbtap');setTimeout(function(){anvil.classList.remove('kbtap');},80);}
+    if(e.code!=='Space')return;
+    if(document.querySelector('.modal.show'))return;            // don't hijack Space inside modals
+    if(document.activeElement&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))return;
+    e.preventDefault();tap(false);anvil.classList.add('kbtap');setTimeout(function(){anvil.classList.remove('kbtap');},80);
   });
 
   /* ---------- golden ingots ---------- */
   function scheduleIngot(){
     clearTimeout(ingotTimer);
     var base=90000+Math.random()*60000;
-    base*=Math.pow(0.88,lvl("prosp"));
+    base*=Math.pow(0.88,lvl("prosp"))*techProd('ingot');
     ingotTimer=setTimeout(spawnIngot,base);
   }
   function spawnIngot(){
@@ -559,20 +655,21 @@
     if(!ingotEl)return;clearTimeout(ingotEl._to);ingotEl.remove();ingotEl=null;
     S.stats.ingots++;chime();
     var roll=Math.random();
+    var dur=FRENZY_MS+techSum('frenzy');
     if(roll<0.6){var bonus=Math.max(clickPower()*25,mps()*45);if(bonus<10)bonus=10+W().metal*0.05;gain(bonus);
       toast('Lucky ingot! +'+fmt(bonus)+' metal');}
-    else if(roll<0.85){prodFrenzyUntil=Date.now()+FRENZY_MS;toast('Forge Frenzy! ×'+PROD_FRENZY+' metal/sec for '+(FRENZY_MS/1000)+'s');}
-    else{clickFrenzyUntil=Date.now()+FRENZY_MS;toast('Click Frenzy! ×'+CLICK_FRENZY+' per click for '+(FRENZY_MS/1000)+'s');}
+    else if(roll<0.85){prodFrenzyUntil=Date.now()+dur;toast('Forge Frenzy! ×'+PROD_FRENZY+' metal/sec for '+Math.round(dur/1000)+'s');}
+    else{clickFrenzyUntil=Date.now()+dur;toast('Click Frenzy! ×'+CLICK_FRENZY+' per click for '+Math.round(dur/1000)+'s');}
     renderFrenzy();scheduleIngot();save();
   }
 
   /* ---------- shop UI ---------- */
   function buildShop(){var sh=document.getElementById('shop');sh.innerHTML='';var T=curTiers();
     var pc=document.createElement('button');pc.className='shopbtn';pc.id='ppcBtn';
-    pc.addEventListener('click',function(){var c=hammerCost();if(W().metal>=c){W().metal-=c;W().hammer++;beep(440,.09);renderShop();save();}});
+    pc.addEventListener('click',function(){var n=buyCountHammer();if(n<1)return;var c=hammerCostN(n);if(W().metal>=c){W().metal-=c;W().hammer+=n;beep(440,.09);renderShop();save();}});
     sh.appendChild(pc);
     for(var i=0;i<NTIER;i++){(function(i){var b=document.createElement('button');b.className='shopbtn';b.dataset.t=i;
-      b.addEventListener('click',function(){var c=tierCost(i);if(W().metal>=c){W().metal-=c;W().owned[i]++;beep(330,.08);renderShop();save();}});
+      b.addEventListener('click',function(){var n=buyCountTier(i);if(n<1)return;var c=tierCostN(i,n);if(W().metal>=c){W().metal-=c;W().owned[i]+=n;beep(330,.08);renderShop();save();}});
       sh.appendChild(b);
       if(i===NTIER-1){var d=document.createElement('button');d.className='shopbtn';d.id='drillBtn';
         d.addEventListener('click',function(){var dc=drillCost();if(!W().drill&&W().metal>=dc){W().metal-=dc;W().drill=true;beep(220,.25);toast('Power Drill unlocked! Auto-striking enabled');renderShop();save();}});
@@ -581,13 +678,17 @@
   function renderShop(){
     var w=W(),T=curTiers();
     var pc=document.getElementById('ppcBtn');if(!pc)return;
-    var hCost=hammerCost();
-    pc.innerHTML='<span><span class="nm">Hammer</span><div class="meta">cost '+fmt(hCost)+' · +1 base per click</div></span><span class="own">L'+w.hammer+'</span>';
-    pc.disabled=w.metal<hCost;pc.classList.toggle('afford',w.metal>=hCost);
+    renderBuyMode();
+    var hn=buyCountHammer(),hCost=hn>=1?hammerCostN(hn):hammerCostN(1),hAfford=hn>=1&&w.metal>=hCost;
+    pc.innerHTML='<span><span class="nm">Hammer</span><div class="meta">buy '+(hn||0)+' · cost '+fmt(hCost)+' · +1 per click each</div></span><span class="own">L'+w.hammer+'</span>';
+    pc.disabled=!hAfford;pc.classList.toggle('afford',hAfford);
     for(var i=0;i<NTIER;i++){var b=document.querySelector('.shopbtn[data-t="'+i+'"]');if(!b)continue;
-      var tCost=tierCost(i);
-      b.innerHTML='<span><span class="nm">'+T[i].nm+'</span><div class="meta">cost '+fmt(tCost)+' · +'+T[i].mps+'/sec each</div></span><span class="own">'+w.owned[i]+'</span>';
-      b.disabled=w.metal<tCost;b.classList.toggle('afford',w.metal>=tCost);}
+      var n=buyCountTier(i),cost=n>=1?tierCostN(i,n):tierCostN(i,1),afford=n>=1&&w.metal>=cost;
+      var ms=milestoneMult(w.owned[i]),nm=nextMilestone(w.owned[i]);
+      var msTag=ms>1?' <span style="color:var(--gold)">×'+ms+'</span>':'';
+      var nmTxt=nm?(' · ×2 at '+nm):'';
+      b.innerHTML='<span><span class="nm">'+T[i].nm+msTag+'</span><div class="meta">buy '+(n||0)+' · cost '+fmt(cost)+' · +'+T[i].mps+'/sec each'+nmTxt+'</div></span><span class="own">'+w.owned[i]+'</span>';
+      b.disabled=!afford;b.classList.toggle('afford',afford);}
     var db=document.getElementById('drillBtn');
     if(db){if(w.drill){db.innerHTML='<span><span class="nm"><i class="ti ti-drill" style="vertical-align:-2px"></i> Power Drill</span><div class="meta">auto-strikes '+autoRate()+'×/sec (upgrade in Reforge Tree)</div></span><span class="own">ON</span>';db.disabled=true;db.classList.remove('afford');}
       else{db.innerHTML='<span><span class="nm"><i class="ti ti-drill" style="vertical-align:-2px"></i> Power Drill</span><div class="meta">unlock '+fmt(drillCost())+' · auto-strikes for you</div></span><span class="own">&#9889;</span>';db.disabled=w.metal<drillCost();db.classList.toggle('afford',w.metal>=drillCost());}}
@@ -613,6 +714,46 @@
       lvEl.textContent='Level '+l+' / '+p.max;
       if(l>=p.max){btn.textContent='MAX';btn.disabled=true;btn.classList.add('max');}
       else{var c=p.cost(l);btn.classList.remove('max');btn.textContent=c+' rep';btn.disabled=S.repAvail<c;}});
+  }
+
+  /* ---------- buy-mode toggle ---------- */
+  function renderBuyMode(){var box=document.getElementById('buyMode');if(!box)return;
+    var btns=box.querySelectorAll('button');for(var i=0;i<btns.length;i++){
+      var v=btns[i].dataset.buy;var on=(String(S.buyMode)===v);btns[i].classList.toggle('on',on);}}
+  document.getElementById('buyMode').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;var v=b.dataset.buy;
+    S.buyMode=(v==='max')?'max':parseInt(v,10);renderBuyMode();renderShop();save();});
+
+  /* ---------- blueprints ---------- */
+  function buildBlueprints(){var g=document.getElementById('bpGrid');g.innerHTML='';renderBlueprints();}
+  function buyBlueprint(b){if(hasTech(b.id))return;try{if(!b.req())return;}catch(e){return;}
+    if(W().metal<b.cost)return;W().metal-=b.cost;S.tech[b.id]=true;beep(660,.14);
+    toast('Blueprint built: '+b.nm);renderBlueprints();renderShop();save();}
+  function renderBlueprints(){var g=document.getElementById('bpGrid');if(!g)return;
+    document.getElementById('bpCount').textContent=techCount()+' / '+BLUEPRINTS.length;
+    // show owned + currently unlocked, cheapest first
+    var vis=BLUEPRINTS.filter(function(b){if(hasTech(b.id))return true;try{return b.req();}catch(e){return false;}})
+      .sort(function(a,c){return (hasTech(a.id)-hasTech(c.id))||(a.cost-c.cost);});
+    g.innerHTML='';
+    if(!vis.length){g.innerHTML='<div class="note">No blueprints available yet — keep forging to discover designs.</div>';return;}
+    vis.forEach(function(b){var owned=hasTech(b.id);var el=document.createElement('div');el.className='bpItem'+(owned?' owned':'');
+      var afford=!owned&&W().metal>=b.cost;
+      el.innerHTML='<div><div class="nm">'+b.nm+'</div><div class="ds">'+b.ds+'</div></div>'+
+        '<button class="bpBuy'+(owned?' have':'')+'"'+((owned||!afford)?' disabled':'')+'>'+(owned?'✓ Built':fmt(b.cost))+'</button>';
+      if(!owned){el.querySelector('.bpBuy').addEventListener('click',function(){buyBlueprint(b);});}
+      g.appendChild(el);});}
+
+  /* ---------- overdrive ---------- */
+  var odBtn=document.getElementById('overdrive');
+  function activateOverdrive(){if(!odReady())return;S.odLast=Date.now();S.stats.overdrives=(S.stats.overdrives||0)+1;
+    beep(880,.18);toast('OVERDRIVE! ×'+OD.mult+' output for '+Math.round((OD.dur+techSum('frenzy'))/1000)+'s');shake();renderOverdrive();save();}
+  odBtn.addEventListener('click',activateOverdrive);
+  function renderOverdrive(){
+    if(odActive()){var left=Math.ceil(((S.odLast||0)+OD.dur+techSum('frenzy')-Date.now())/1000);
+      odBtn.className='icbtn active';odBtn.disabled=true;odBtn.innerHTML='<i class="ti ti-bolt"></i> '+left+'s';}
+    else if(odReady()){odBtn.className='icbtn ready';odBtn.disabled=false;odBtn.innerHTML='<i class="ti ti-bolt"></i> Overdrive';}
+    else{var cd=Math.ceil(((S.odLast||0)+OD.cd-Date.now())/1000);
+      odBtn.className='icbtn';odBtn.disabled=true;odBtn.innerHTML='<i class="ti ti-bolt-off"></i> '+fmtTime(cd);}
   }
 
   /* ---------- achievements ---------- */
@@ -667,6 +808,7 @@
     document.getElementById('prestige').disabled=pg<1;
   }
   function renderFrenzy(){var f=document.getElementById('frenzy');var h='';
+    if(odActive())h+='<div class="frenzyTag"><i class="ti ti-bolt"></i> Overdrive ×'+OD.mult+'</div>';
     if(prodFrenzyOn())h+='<div class="frenzyTag"><i class="ti ti-flame"></i> Forge Frenzy ×'+PROD_FRENZY+'</div>';
     if(clickFrenzyOn())h+='<div class="frenzyTag click"><i class="ti ti-bolt"></i> Click Frenzy ×'+CLICK_FRENZY+'</div>';
     f.innerHTML=h;}
@@ -695,14 +837,16 @@
   function openModal(id){document.getElementById(id).classList.add('show');}
   function closeModal(id){document.getElementById(id).classList.remove('show');}
   function showTab(which){
-    ['Upgrades','Reforge','Skins'].forEach(function(n){
+    ['Upgrades','Blueprints','Reforge','Skins'].forEach(function(n){
       document.getElementById('pane'+n).style.display=(n===which)?'':'none';
       document.getElementById('tab'+n).classList.toggle('on',n===which);});
+    if(which==='Upgrades')renderShop();if(which==='Blueprints')renderBlueprints();
     if(which==='Reforge')renderPups();if(which==='Skins')renderSkins();}
   document.getElementById('tabUpgrades').addEventListener('click',function(){showTab('Upgrades');});
+  document.getElementById('tabBlueprints').addEventListener('click',function(){showTab('Blueprints');});
   document.getElementById('tabReforge').addEventListener('click',function(){showTab('Reforge');});
   document.getElementById('tabSkins').addEventListener('click',function(){showTab('Skins');});
-  document.getElementById('openShop').addEventListener('click',function(){renderShop();renderSkins();renderPups();openModal('shopModal');});
+  document.getElementById('openShop').addEventListener('click',function(){renderShop();renderSkins();renderPups();renderBlueprints();openModal('shopModal');});
   document.getElementById('closeShop').addEventListener('click',function(){closeModal('shopModal');});
 
   document.getElementById('openSettings').addEventListener('click',function(){
@@ -722,12 +866,12 @@
   document.getElementById('importBtn').addEventListener('click',function(){
     var v=document.getElementById('saveBox').value.trim();if(!v){toast('Paste a save code first');return;}
     try{var d=JSON.parse(decodeURIComponent(escape(atob(v))));applyLoaded(d);save();
-      buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();renderTheme();closeModal('settingsModal');toast('Save imported!');}
+      buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();buildBlueprints();renderOverdrive();renderTheme();closeModal('settingsModal');toast('Save imported!');}
     catch(e){toast('Invalid save code');}});
   document.getElementById('resetBtn').addEventListener('click',function(){
     if(!confirm('Reset ALL progress? This cannot be undone.'))return;
     S=freshState();playerName='';playerPw='';soundOn=true;vol=0.7;combo=0;heat=0;prodFrenzyUntil=0;clickFrenzyUntil=0;
-    save();buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();renderTheme();closeModal('settingsModal');toast('Progress reset');});
+    save();buildShop();renderShop();renderAchv();applySkin();buildSkins();buildPups();buildBlueprints();renderOverdrive();renderTheme();closeModal('settingsModal');toast('Progress reset');});
 
   function renderStats(){var box=document.getElementById('statBox');var st=S.stats;
     var rows=[['Total metal forged',fmt(S.totalMetal)],['Anvil strikes',(st.clicks||0).toLocaleString()],
@@ -798,8 +942,8 @@
     if(!d)return;
     if(d.v>=2&&d.shops){ // current format: merge over fresh so new fields exist
       var f=freshState();for(var k in f)if(!(k in d))d[k]=f[k];
-      d.stats=Object.assign({clicks:0,criticals:0,ingots:0,reforges:0,maxedHeat:false},d.stats||{});
-      d.pUp=d.pUp||{};
+      d.stats=Object.assign({clicks:0,criticals:0,ingots:0,reforges:0,overdrives:0,maxedHeat:false},d.stats||{});
+      d.pUp=d.pUp||{};d.tech=d.tech||{};if(typeof d.buyMode==='undefined')d.buyMode=1;if(typeof d.odLast!=='number')d.odLast=0;
       for(var s=0;s<2;s++){var sh=d.shops[s]||newShop();if(!sh.owned||sh.owned.length!==NTIER){var o=sh.owned||[];var no=[0,0,0,0,0,0,0];for(var i=0;i<o.length&&i<NTIER;i++)no[i]=o[i]||0;sh.owned=no;}
         if(typeof sh.metal!=='number')sh.metal=0;if(typeof sh.hammer!=='number')sh.hammer=sh.ppcLvl||0;if(typeof sh.drill!=='boolean')sh.drill=!!sh.drill;d.shops[s]=sh;}
       S=d;
@@ -853,28 +997,28 @@
     var ar=autoRate();
     if(ar>0){autoAcc+=ar*dt;var guard=0;while(autoAcc>=1&&guard<200){autoAcc--;guard++;tap(true);}}
     // heat + combo decay
-    if(heat>0)heat=Math.max(0,heat-HEAT_DECAY*dt);
+    if(heat>0)heat=Math.max(0,heat-HEAT_DECAY*techProd('heatdecay')*dt);
     if(combo>0&&Date.now()-lastTap>1100)combo=Math.max(0,combo-2);
     renderLive();renderFrenzy();
     requestAnimationFrame(frame);
   }
 
   // throttled heavier renders
-  setInterval(function(){renderShop();checkAchv();renderSkins();},500);
+  setInterval(function(){renderShop();checkAchv();renderSkins();renderOverdrive();},500);
   setInterval(save,10000);
   setInterval(loadBoard,20000);
   document.addEventListener('visibilitychange',function(){if(document.hidden)save();});
   window.addEventListener('beforeunload',save);
 
   /* ---------- init ---------- */
-  buildAchv();buildShop();buildSkins();buildPups();
+  buildAchv();buildShop();buildSkins();buildPups();buildBlueprints();
   (window.storage||window.localStorage?load():Promise.resolve()).then(function(){
     applyOffline();
-    buildShop();renderShop();renderAchv();checkAchv();buildSkins();buildPups();applySkin();renderTheme();renderStats();
+    buildShop();renderShop();renderAchv();checkAchv();buildSkins();buildPups();buildBlueprints();applySkin();renderTheme();renderStats();renderOverdrive();
     loadBoard();scheduleIngot();
     requestAnimationFrame(frame);
   }).catch(function(){
-    buildShop();renderShop();renderAchv();applySkin();renderTheme();loadBoard();scheduleIngot();requestAnimationFrame(frame);
+    buildShop();renderShop();renderAchv();applySkin();renderTheme();renderOverdrive();loadBoard();scheduleIngot();requestAnimationFrame(frame);
   });
 })();
 </script>
